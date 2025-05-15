@@ -43,6 +43,11 @@ app.get('/code-editor/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'code-editor.html'));
 });
 
+// Route for knowledge graph visualization
+app.get('/knowledge-graph', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'knowledge-graph.html'));
+});
+
 // Handle PDF upload
 app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
   if (!req.file) {
