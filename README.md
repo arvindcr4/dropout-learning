@@ -30,7 +30,7 @@ A sophisticated learning platform that applies advanced educational principles t
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/dropout-learning.git
+   git clone https://github.com/arvindcr4/dropout-learning.git
    cd dropout-learning
    ```
 
