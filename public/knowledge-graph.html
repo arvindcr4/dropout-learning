@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropout Learning - Knowledge Graph</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+    .badge-xp {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    .xp-icon {
+      margin-right: 5px;
+      color: #ff9800;
+    }
+    .graph-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+      height: 600px;
+      position: relative;
+      overflow: hidden;
+    }
+    .graph-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .graph-legend {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-right: 15px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .node:hover {
+      stroke: #000;
+      stroke-width: 2px;
+    }
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .info-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      width: 300px;
+      max-width: calc(100% - 40px);
+      z-index: 100;
+      display: none;
+    }
+    .topic-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .topic-header {
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topic-body {
+      padding: 15px;
+    }
+    .mastery-bar {
+      height: 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .mastery-value {
+      height: 100%;
+      background-color: #3498db;
+      border-radius: 4px;
+    }
+    .learning-path {
+      margin-top: 20px;
+    }
+    .path-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .path-connector {
+      width: 2px;
+      height: 30px;
+      background-color: #3498db;
+      margin-left: 9px;
+    }
+    .path-node {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #3498db;
+      margin-right: 10px;
+      position: relative;
+    }
+    .path-completed {
+      background-color: #28a745;
+    }
+    .path-current {
+      border: 2px solid #3498db;
+      background-color: white;
+    }
+    .path-content {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 10px;
+      flex-grow: 1;
+    }
+    .path-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .path-description {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Dropout Learning</a>
+      <div class="badge-xp">
+        <i class="fas fa-star xp-icon"></i>
+        <span id="xp-earned">120</span> XP Today
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <h2>Your Knowledge Graph</h2>
+    <p>This interactive visualization shows your progress across the curriculum, with concept relationships and prerequisites.</p>
+    
+    <div class="graph-container">
+      <div class="graph-controls">
+        <button id="zoom-in" class="btn btn-sm btn-outline-primary"><i class="fas fa-search-plus"></i></button>
+        <button id="zoom-out" class="btn btn-sm btn-outline-primary"><i class="fas fa-search-minus"></i></button>
+        <button id="reset-view" class="btn btn-sm btn-outline-secondary"><i class="fas fa-compress-arrows-alt"></i></button>
+      </div>
+      
+      <svg id="knowledge-graph" width="100%" height="100%"></svg>
+      
+      <div id="info-panel" class="info-panel">
+        <h5 id="info-title">Topic Title</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span id="info-category" class="badge bg-info">Category</span>
+          <span id="info-difficulty"></span>
+        </div>
+        <p id="info-description">Topic description will appear here.</p>
+        <div>
+          <strong>Mastery Level:</strong>
+          <div class="mastery-bar">
+            <div id="info-mastery" class="mastery-value" style="width: 70%;"></div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button id="learn-topic" class="btn btn-sm btn-primary">Study This Topic</button>
+          <button id="close-info" class="btn btn-sm btn-outline-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="graph-legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #3498db;"></div>
+        <span>Data Processing</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #2ecc71;"></div>
+        <span>Statistics</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #e74c3c;"></div>
+        <span>Machine Learning</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #f39c12;"></div>
+        <span>Visualization</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #9b59b6;"></div>
+        <span>Math Foundations</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #ccc;"></div>
+        <span>Not Started</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #333;"></div>
+        <span>Mastered</span>
+      </div>
+    </div>
+    
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="topic-card">
+          <div class="topic-header">
+            <h5 class="mb-0">Current Progress</h5>
+          </div>
+          <div class="topic-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span>Overall Curriculum Progress</span>
+              <span>35%</span>
+            </div>
+            <div class="mastery-bar">
+              <div class="mastery-value" style="width: 35%;"></div>
+            </div>
+            
+            <div class="mt-4">
+              <h6>Category Progress</h6>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>Data Processing</span>
+                <span>60%</span>
+              </div>
+              <div class="mastery-bar">
+                <div class="mastery-value" style="width: 60%; background-color: #3498db;"></div>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+                <span>Statistics</span>
+                <span>45%</span>
+              </div>
+              <div class="mastery-bar">
+                <div class="mastery-value" style="width: 45%; background-color: #2ecc71;"></div>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+                <span>Machine Learning</span>
+                <span>20%</span>
+              </div>
+              <div class="mastery-bar">
+                <div class="mastery-value" style="width: 20%; background-color: #e74c3c;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="topic-card">
+          <div class="topic-header">
+            <h5 class="mb-0">Recommended Learning Path</h5>
+          </div>
+          <div class="topic-body">
+            <p>Based on your knowledge graph, we recommend this sequence:</p>
+            
+            <div class="learning-path">
+              <div class="path-step">
+                <div class="path-node path-completed"></div>
+                <div class="path-content">
+                  <div class="path-title">Data Cleaning Fundamentals</div>
+                  <div class="path-description">Basic techniques for handling missing data and outliers</div>
+                </div>
+              </div>
+              
+              <div class="path-connector"></div>
+              
+              <div class="path-step">
+                <div class="path-node path-completed"></div>
+                <div class="path-content">
+                  <div class="path-title">Exploratory Data Analysis</div>
+                  <div class="path-description">Statistical methods for understanding data distributions</div>
+                </div>
+              </div>
+              
+              <div class="path-connector"></div>
+              
+              <div class="path-step">
+                <div class="path-node path-current"></div>
+                <div class="path-content">
+                  <div class="path-title">Feature Engineering</div>
+                  <div class="path-description">Creating meaningful features from raw data</div>
+                </div>
+              </div>
+              
+              <div class="path-connector"></div>
+              
+              <div class="path-step">
+                <div class="path-node"></div>
+                <div class="path-content">
+                  <div class="path-title">Supervised Learning Basics</div>
+                  <div class="path-description">Introduction to regression and classification</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center mt-3">
+              <a href="/knowledge-point/1" class="btn btn-primary">Continue Learning</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // D3.js Graph Visualization
+    document.addEventListener('DOMContentLoaded', function() {
+      const svg = d3.select('#knowledge-graph');
+      const width = svg.node().getBoundingClientRect().width;
+      const height = svg.node().getBoundingClientRect().height;
+      
+      // Create graph data
+      // In a real application, this would come from an API
+      const graphData = {
+        nodes: [
+          { id: 1, name: "Data Fundamentals", category: "Data Processing", mastery: 1.0, difficulty: 1 },
+          { id: 2, name: "Python Basics", category: "Data Processing", mastery: 0.9, difficulty: 1 },
+          { id: 3, name: "Data Cleaning", category: "Data Processing", mastery: 0.8, difficulty: 2 },
+          { id: 4, name: "Exploratory Analysis", category: "Statistics", mastery: 0.7, difficulty: 2 },
+          { id: 5, name: "Descriptive Statistics", category: "Statistics", mastery: 0.7, difficulty: 2 },
+          { id: 6, name: "Data Visualization", category: "Visualization", mastery: 0.6, difficulty: 2 },
+          { id: 7, name: "Feature Engineering", category: "Data Processing", mastery: 0.3, difficulty: 3 },
+          { id: 8, name: "Hypothesis Testing", category: "Statistics", mastery: 0.4, difficulty: 3 },
+          { id: 9, name: "Regression", category: "Machine Learning", mastery: 0.2, difficulty: 3 },
+          { id: 10, name: "Classification", category: "Machine Learning", mastery: 0.1, difficulty: 3 },
+          { id: 11, name: "Clustering", category: "Machine Learning", mastery: 0.0, difficulty: 4 },
+          { id: 12, name: "Dimensionality Reduction", category: "Machine Learning", mastery: 0.0, difficulty: 4 },
+          { id: 13, name: "Linear Algebra", category: "Math Foundations", mastery: 0.5, difficulty: 2 },
+          { id: 14, name: "Probability", category: "Math Foundations", mastery: 0.6, difficulty: 2 },
+          { id: 15, name: "Neural Networks", category: "Machine Learning", mastery: 0.0, difficulty: 5 }
+        ],
+        links: [
+          { source: 1, target: 2 },
+          { source: 2, target: 3 },
+          { source: 3, target: 4 },
+          { source: 4, target: 6 },
+          { source: 4, target: 7 },
+          { source: 5, target: 4 },
+          { source: 5, target: 8 },
+          { source: 13, target: 9 },
+          { source: 14, target: 8 },
+          { source: 14, target: 10 },
+          { source: 8, target: 9 },
+          { source: 8, target: 10 },
+          { source: 7, target: 9 },
+          { source: 7, target: 10 },
+          { source: 9, target: 11 },
+          { source: 10, target: 11 },
+          { source: 13, target: 12 },
+          { source: 9, target: 15 },
+          { source: 12, target: 15 }
+        ]
+      };
+      
+      // Color scale for categories
+      const colorScale = d3.scaleOrdinal()
+        .domain(["Data Processing", "Statistics", "Machine Learning", "Visualization", "Math Foundations"])
+        .range(["#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6"]);
+      
+      // Size scale based on difficulty
+      const sizeScale = d3.scaleLinear()
+        .domain([1, 5])
+        .range([8, 16]);
+      
+      // Create a force simulation
+      const simulation = d3.forceSimulation(graphData.nodes)
+        .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(d => sizeScale(d.difficulty) + 10));
+      
+      // Add zoom functionality
+      const zoom = d3.zoom()
+        .scaleExtent([0.5, 3])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        });
+      
+      svg.call(zoom);
+      
+      // Create the main group that will be transformed
+      const g = svg.append("g");
+      
+      // Create links
+      const link = g.append("g")
+        .selectAll("line")
+        .data(graphData.links)
+        .enter()
+        .append("line")
+        .attr("class", "link")
+        .attr("stroke-width", 2);
+      
+      // Create nodes
+      const node = g.append("g")
+        .selectAll("circle")
+        .data(graphData.nodes)
+        .enter()
+        .append("circle")
+        .attr("class", "node")
+        .attr("r", d => sizeScale(d.difficulty))
+        .attr("fill", d => d.mastery > 0 ? colorScale(d.category) : "#ccc")
+        .attr("stroke", d => d.mastery >= 0.8 ? "#333" : "none")
+        .attr("stroke-width", 2)
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+      
+      // Add title tooltip
+      node.append("title")
+        .text(d => d.name);
+      
+      // On node click, show info panel
+      node.on("click", (event, d) => {
+        const panel = document.getElementById('info-panel');
+        const title = document.getElementById('info-title');
+        const category = document.getElementById('info-category');
+        const difficulty = document.getElementById('info-difficulty');
+        const description = document.getElementById('info-description');
+        const mastery = document.getElementById('info-mastery');
+        
+        title.textContent = d.name;
+        category.textContent = d.category;
+        
+        // Set difficulty stars
+        let stars = '';
+        for (let i = 0; i < d.difficulty; i++) {
+          stars += '★';
+        }
+        for (let i = d.difficulty; i < 5; i++) {
+          stars += '☆';
+        }
+        difficulty.textContent = stars;
+        
+        // Set mock description based on topic
+        const descriptions = {
+          "Data Fundamentals": "Introduction to data types, sources, and basic operations.",
+          "Python Basics": "Essential Python programming skills for data science.",
+          "Data Cleaning": "Techniques for handling missing values, outliers, and data quality issues.",
+          "Exploratory Analysis": "Methods to explore and understand data distributions and relationships.",
+          "Descriptive Statistics": "Summarizing data with measures of central tendency and variability.",
+          "Data Visualization": "Creating effective visualizations to communicate findings.",
+          "Feature Engineering": "Transforming raw data into meaningful features for modeling.",
+          "Hypothesis Testing": "Statistical methods to test assumptions about data.",
+          "Regression": "Modeling relationships between variables with regression techniques.",
+          "Classification": "Algorithms for categorizing data into discrete classes.",
+          "Clustering": "Grouping similar data points based on features.",
+          "Dimensionality Reduction": "Techniques to reduce feature space while preserving information.",
+          "Linear Algebra": "Matrix operations and transformations for data science.",
+          "Probability": "Understanding randomness and uncertainty in data.",
+          "Neural Networks": "Deep learning fundamentals and architectures."
+        };
+        
+        description.textContent = descriptions[d.name] || "Learn about this important data science topic.";
+        
+        // Set mastery level
+        mastery.style.width = `${d.mastery * 100}%`;
+        
+        // Show panel
+        panel.style.display = 'block';
+      });
+      
+      // Close info panel button
+      document.getElementById('close-info').addEventListener('click', () => {
+        document.getElementById('info-panel').style.display = 'none';
+      });
+      
+      // Study topic button
+      document.getElementById('learn-topic').addEventListener('click', () => {
+        // In a real app, this would navigate to the appropriate lesson
+        window.location.href = '/knowledge-point/1';
+      });
+      
+      // Update positions on each tick of the simulation
+      simulation.on("tick", () => {
+        link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+          
+        node
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+      });
+      
+      // Drag functions
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+      
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+      
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+      
+      // Zoom control buttons
+      document.getElementById('zoom-in').addEventListener('click', () => {
+        svg.transition().call(zoom.scaleBy, 1.2);
+      });
+      
+      document.getElementById('zoom-out').addEventListener('click', () => {
+        svg.transition().call(zoom.scaleBy, 0.8);
+      });
+      
+      document.getElementById('reset-view').addEventListener('click', () => {
+        svg.transition().call(zoom.transform, d3.zoomIdentity);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -38,6 +38,11 @@ app.get('/knowledge-point/:id', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'knowledge-point.html'));
 });
 
+// Route for interactive code editor
+app.get('/code-editor/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'code-editor.html'));
+});
+
 // Handle PDF upload
 app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
   if (!req.file) {

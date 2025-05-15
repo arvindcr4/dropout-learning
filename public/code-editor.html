@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropout Learning - Interactive Code Editor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+    .badge-xp {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    .xp-icon {
+      margin-right: 5px;
+      color: #ff9800;
+    }
+    .code-editor-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      height: calc(100vh - 200px);
+      min-height: 500px;
+    }
+    .editor-section {
+      display: flex;
+      flex-direction: column;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .editor {
+      flex-grow: 1;
+      overflow: auto;
+    }
+    .CodeMirror {
+      height: 100%;
+      font-family: "Fira Code", monospace;
+      font-size: 14px;
+    }
+    .output {
+      flex-grow: 1;
+      overflow: auto;
+      padding: 10px;
+      background-color: #282a36;
+      color: #f8f8f2;
+      font-family: "Fira Code", monospace;
+      white-space: pre-wrap;
+    }
+    .task-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .test-cases {
+      margin-top: 20px;
+    }
+    .test-case {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      background-color: #f8f9fa;
+    }
+    .test-result {
+      display: flex;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .test-success {
+      color: #28a745;
+    }
+    .test-failure {
+      color: #dc3545;
+    }
+    .dataset-info {
+      background-color: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .run-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .hint-box {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-top: 20px;
+      display: none;
+    }
+    .visualization-container {
+      padding: 15px;
+      background-color: white;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .toolbar {
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .mastery-indicator {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+    .mastery-step {
+      width: 40px;
+      height: 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+    }
+    .mastery-step.complete {
+      background-color: #28a745;
+    }
+    .mastery-step.current {
+      background-color: #3498db;
+    }
+    .tab-buttons {
+      display: flex;
+      overflow-x: auto;
+      margin-bottom: 10px;
+    }
+    .tab-button {
+      padding: 8px 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      margin-right: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-button.active {
+      background-color: white;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .high-contrast {
+      background-color: #000 !important;
+      color: #fff !important;
+    }
+    .dyslexia-friendly {
+      font-family: 'Open Dyslexic', sans-serif;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Dropout Learning</a>
+      <div class="d-flex align-items-center">
+        <div class="badge-xp me-3">
+          <i class="fas fa-star xp-icon"></i>
+          <span id="xp-earned">45</span> XP Today
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="accessibilityMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-universal-access"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accessibilityMenu">
+            <li><button class="dropdown-item" id="toggle-contrast">High Contrast Mode</button></li>
+            <li><button class="dropdown-item" id="toggle-dyslexia">Dyslexia-Friendly Mode</button></li>
+            <li><button class="dropdown-item" id="increase-font">Increase Font Size</button></li>
+            <li><button class="dropdown-item" id="decrease-font">Decrease Font Size</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="task-card">
+      <h2>Data Manipulation with Pandas</h2>
+      <p class="text-muted">Knowledge Point: Series and DataFrame Operations</p>
+      
+      <div class="dataset-info">
+        <h5><i class="fas fa-database me-2"></i>Dataset: Customer Transaction Records</h5>
+        <p>This dataset contains customer transaction records for an e-commerce platform with columns for customer_id, transaction_date, product_category, amount, and region.</p>
+      </div>
+      
+      <div class="tab-buttons">
+        <div class="tab-button active" data-tab="task">Task</div>
+        <div class="tab-button" data-tab="worked-example">Worked Example</div>
+        <div class="tab-button" data-tab="hints">Hints</div>
+        <div class="tab-button" data-tab="test-cases">Test Cases</div>
+      </div>
+      
+      <div class="tab-content active" id="tab-task">
+        <h5>Task:</h5>
+        <p>Complete the function <code>analyze_transactions</code> that takes a pandas DataFrame of transaction records and performs the following operations:</p>
+        <ol>
+          <li>Filter the DataFrame to include only transactions greater than $50</li>
+          <li>Group the filtered data by product_category</li>
+          <li>Calculate the mean, median, and count for each category</li>
+          <li>Sort the result by total count in descending order</li>
+          <li>Return the resulting DataFrame with renamed columns as shown in the example</li>
+        </ol>
+      </div>
+      
+      <div class="tab-content" id="tab-worked-example">
+        <h5>Worked Example: Analyzing Sales Data</h5>
+        <pre class="bg-light p-3">
+import pandas as pd
+
+# Sample data
+data = {
+    'date': ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-01'],
+    'store': ['A', 'B', 'A', 'C'],
+    'sales': [100, 200, 150, 300]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Step 1: Filter data (e.g., sales > 120)
+filtered_df = df[df['sales'] > 120]
+
+# Step 2: Group by store
+grouped = filtered_df.groupby('store')
+
+# Step 3: Calculate statistics
+stats = grouped['sales'].agg(['mean', 'median', 'count'])
+
+# Step 4: Sort by count in descending order
+stats_sorted = stats.sort_values('count', ascending=False)
+
+# Step 5: Rename columns
+result = stats_sorted.rename(columns={
+    'mean': 'Average Sales',
+    'median': 'Median Sales',
+    'count': 'Transaction Count'
+})
+
+result
+</pre>
+      </div>
+      
+      <div class="tab-content" id="tab-hints">
+        <div class="hint-box" id="hint1">
+          <h6>Hint 1: Filtering data</h6>
+          <p>To filter DataFrame rows based on a condition, use boolean indexing:<br>
+          <code>filtered_df = df[df['amount'] > 50]</code></p>
+        </div>
+        
+        <div class="hint-box" id="hint2">
+          <h6>Hint 2: Grouping data</h6>
+          <p>To group by a column, use the groupby method:<br>
+          <code>grouped = filtered_df.groupby('product_category')</code></p>
+        </div>
+        
+        <div class="hint-box" id="hint3">
+          <h6>Hint 3: Aggregation</h6>
+          <p>To compute multiple statistics at once, use the agg method:<br>
+          <code>stats = grouped['amount'].agg(['mean', 'median', 'count'])</code></p>
+        </div>
+        
+        <div class="hint-box" id="hint4">
+          <h6>Hint 4: Sorting</h6>
+          <p>To sort by a column in descending order:<br>
+          <code>stats_sorted = stats.sort_values('count', ascending=False)</code></p>
+        </div>
+        
+        <div class="hint-box" id="hint5">
+          <h6>Hint 5: Renaming columns</h6>
+          <p>To rename columns, use the rename method:<br>
+          <code>result = stats_sorted.rename(columns={'mean': 'Average Amount', ...})</code></p>
+        </div>
+        
+        <button id="show-hint-1" class="btn btn-sm btn-outline-warning">Show Hint 1</button>
+        <button id="show-hint-2" class="btn btn-sm btn-outline-warning" disabled>Show Hint 2</button>
+        <button id="show-hint-3" class="btn btn-sm btn-outline-warning" disabled>Show Hint 3</button>
+        <button id="show-hint-4" class="btn btn-sm btn-outline-warning" disabled>Show Hint 4</button>
+        <button id="show-hint-5" class="btn btn-sm btn-outline-warning" disabled>Show Hint 5</button>
+      </div>
+      
+      <div class="tab-content" id="tab-test-cases">
+        <h5>Test Cases:</h5>
+        <div class="test-cases">
+          <div class="test-case">
+            <h6>Test Case 1: Basic functionality</h6>
+            <pre class="bg-light p-2">
+# Input:
+data = {
+    'customer_id': [101, 102, 103, 104, 105],
+    'transaction_date': ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05'],
+    'product_category': ['Electronics', 'Clothing', 'Electronics', 'Books', 'Clothing'],
+    'amount': [120.50, 45.99, 80.25, 15.75, 65.50],
+    'region': ['North', 'South', 'North', 'East', 'West']
+}
+df = pd.DataFrame(data)
+
+# Expected output:
+#                 Average Amount  Median Amount  Transaction Count
+# product_category                                              
+# Electronics            100.375         100.375                 2
+# Clothing                65.50           65.50                 1
+</pre>
+            <div class="test-result">
+              <span class="test-status">Status: </span>
+              <span class="test-message">Not run yet</span>
+            </div>
+          </div>
+          
+          <div class="test-case">
+            <h6>Test Case 2: Empty result</h6>
+            <pre class="bg-light p-2">
+# Input:
+data = {
+    'customer_id': [101, 102, 103],
+    'transaction_date': ['2023-01-01', '2023-01-02', '2023-01-03'],
+    'product_category': ['Electronics', 'Clothing', 'Books'],
+    'amount': [45.50, 30.99, 25.25],
+    'region': ['North', 'South', 'North']
+}
+df = pd.DataFrame(data)
+
+# Expected output:
+# Empty DataFrame (since no transactions > $50)
+</pre>
+            <div class="test-result">
+              <span class="test-status">Status: </span>
+              <span class="test-message">Not run yet</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-editor-container">
+      <div class="editor-section">
+        <div class="section-header">
+          <h5>Code Editor</h5>
+          <select id="language-select" class="form-select form-select-sm" style="width: 100px;">
+            <option value="python" selected>Python</option>
+            <option value="r">R</option>
+          </select>
+        </div>
+        <div class="toolbar">
+          <button id="run-code" class="btn btn-sm btn-primary"><i class="fas fa-play me-1"></i>Run</button>
+          <button id="run-tests" class="btn btn-sm btn-success"><i class="fas fa-vial me-1"></i>Run Tests</button>
+          <button id="reset-code" class="btn btn-sm btn-outline-secondary"><i class="fas fa-undo me-1"></i>Reset</button>
+        </div>
+        <div id="code-editor" class="editor"></div>
+      </div>
+      
+      <div class="editor-section">
+        <div class="section-header">
+          <h5>Output</h5>
+          <div class="run-options">
+            <button id="clear-output" class="btn btn-sm btn-outline-secondary"><i class="fas fa-trash me-1"></i>Clear</button>
+            <button id="toggle-visualization" class="btn btn-sm btn-outline-info"><i class="fas fa-chart-bar me-1"></i>Visualization</button>
+          </div>
+        </div>
+        <div id="code-output" class="output">
+# Output will appear here when you run your code
+        </div>
+        <div id="visualization-area" class="visualization-container" style="display: none;">
+          <p>Visualization will appear here</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mastery-indicator mt-4">
+      <div class="mastery-step" id="mastery-1"></div>
+      <div class="mastery-step" id="mastery-2"></div>
+      <div class="mastery-step" id="mastery-3"></div>
+      <div class="mastery-step" id="mastery-4"></div>
+      <div class="mastery-step" id="mastery-5"></div>
+    </div>
+    
+    <div class="text-center mt-3">
+      <button id="submit-solution" class="btn btn-lg btn-primary" disabled>Submit Solution</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/r/r.min.js"></script>
+
+  <script>
+    // Starter code for the editor
+    const starterCodePython = `import pandas as pd
+import numpy as np
+
+def analyze_transactions(df):
+    """
+    Analyze transaction data to find insights by category.
+    
+    Args:
+        df: A pandas DataFrame with customer transaction data
+            
+    Returns:
+        A pandas DataFrame with statistics by product category
+    """
+    # Your code here
+    # Step 1: Filter transactions > $50
+    
+    # Step 2: Group by product_category
+    
+    # Step 3: Calculate statistics (mean, median, count)
+    
+    # Step 4: Sort by count in descending order
+    
+    # Step 5: Rename columns appropriately
+    
+    # Return the result
+    pass
+
+# Example usage (uncomment to test)
+# data = {
+#     'customer_id': [101, 102, 103, 104, 105],
+#     'transaction_date': ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05'],
+#     'product_category': ['Electronics', 'Clothing', 'Electronics', 'Books', 'Clothing'],
+#     'amount': [120.50, 45.99, 80.25, 15.75, 65.50],
+#     'region': ['North', 'South', 'North', 'East', 'West']
+# }
+# df = pd.DataFrame(data)
+# result = analyze_transactions(df)
+# print(result)
+`;
+
+    const starterCodeR = `# Data manipulation with R
+library(dplyr)
+
+analyze_transactions <- function(df) {
+  # Your code here
+  # Step 1: Filter transactions > $50
+  
+  # Step 2: Group by product_category
+  
+  # Step 3: Calculate statistics (mean, median, count)
+  
+  # Step 4: Sort by count in descending order
+  
+  # Step 5: Rename columns appropriately
+  
+  # Return the result
+}
+
+# Example usage (uncomment to test)
+# data <- data.frame(
+#   customer_id = c(101, 102, 103, 104, 105),
+#   transaction_date = c('2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05'),
+#   product_category = c('Electronics', 'Clothing', 'Electronics', 'Books', 'Clothing'),
+#   amount = c(120.50, 45.99, 80.25, 15.75, 65.50),
+#   region = c('North', 'South', 'North', 'East', 'West')
+# )
+# result <- analyze_transactions(data)
+# print(result)
+`;
+
+    // Initialize CodeMirror editor
+    const editor = CodeMirror(document.getElementById('code-editor'), {
+      value: starterCodePython,
+      mode: 'python',
+      theme: 'dracula',
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      indentWithTabs: false,
+      smartIndent: true,
+      lineWrapping: true,
+      extraKeys: {
+        "Tab": function(cm) {
+          cm.replaceSelection("    ", "end");
+        }
+      }
+    });
+
+    // Language selection
+    document.getElementById('language-select').addEventListener('change', function(e) {
+      const language = e.target.value;
+      if (language === 'python') {
+        editor.setValue(starterCodePython);
+        editor.setOption('mode', 'python');
+      } else if (language === 'r') {
+        editor.setValue(starterCodeR);
+        editor.setOption('mode', 'r');
+      }
+    });
+
+    // Tab navigation
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        // Show selected tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById('tab-' + tab).classList.add('active');
+      });
+    });
+
+    // Run code button action
+    document.getElementById('run-code').addEventListener('click', function() {
+      const output = document.getElementById('code-output');
+      output.textContent = "Running code...\n\n";
+      
+      // Simulate code execution (in a real app, this would send code to a server)
+      setTimeout(() => {
+        // Mock successful output
+        output.textContent += "DataFrame created successfully.\n\n";
+        output.textContent += "            Average Amount  Median Amount  Transaction Count\n";
+        output.textContent += "product_category                                          \n";
+        output.textContent += "Electronics        100.38        100.38                2\n";
+        output.textContent += "Clothing            65.50         65.50                1\n";
+        
+        // Enable the visualization toggle
+        document.getElementById('toggle-visualization').disabled = false;
+        
+        // Update mastery steps
+        document.getElementById('mastery-1').classList.add('complete');
+        document.getElementById('mastery-2').classList.add('current');
+        
+        // Enable the submit button after successful run
+        document.getElementById('submit-solution').disabled = false;
+      }, 1500);
+    });
+
+    // Run tests button action
+    document.getElementById('run-tests').addEventListener('click', function() {
+      const output = document.getElementById('code-output');
+      output.textContent = "Running tests...\n\n";
+      
+      // Simulate test execution
+      setTimeout(() => {
+        output.textContent += "Test Case 1: ✅ Passed\n";
+        output.textContent += "Test Case 2: ✅ Passed\n\n";
+        output.textContent += "All tests passed!\n";
+        
+        // Update test case UI
+        document.querySelectorAll('.test-result').forEach((result, idx) => {
+          const statusSpan = result.querySelector('.test-status');
+          const messageSpan = result.querySelector('.test-message');
+          statusSpan.textContent = "Status: ";
+          
+          const statusIcon = document.createElement('span');
+          statusIcon.className = 'test-success';
+          statusIcon.innerHTML = '<i class="fas fa-check-circle me-1"></i>';
+          statusSpan.appendChild(statusIcon);
+          
+          messageSpan.textContent = "Passed";
+          messageSpan.className = 'test-success';
+        });
+        
+        // Update mastery steps
+        document.getElementById('mastery-1').classList.add('complete');
+        document.getElementById('mastery-2').classList.add('complete');
+        document.getElementById('mastery-3').classList.add('complete');
+        document.getElementById('mastery-4').classList.add('current');
+        
+        // Enable the submit button after successful tests
+        document.getElementById('submit-solution').disabled = false;
+      }, 2000);
+    });
+
+    // Clear output button
+    document.getElementById('clear-output').addEventListener('click', function() {
+      document.getElementById('code-output').textContent = "# Output will appear here when you run your code";
+    });
+
+    // Toggle visualization
+    document.getElementById('toggle-visualization').addEventListener('click', function() {
+      const outputArea = document.getElementById('code-output');
+      const visualizationArea = document.getElementById('visualization-area');
+      
+      if (visualizationArea.style.display === 'none') {
+        outputArea.style.display = 'none';
+        visualizationArea.style.display = 'block';
+        this.innerHTML = '<i class="fas fa-terminal me-1"></i>Show Output';
+        
+        // Simulate loading a visualization
+        visualizationArea.innerHTML = '<p>Loading visualization...</p>';
+        setTimeout(() => {
+          visualizationArea.innerHTML = `
+            <h5>Transaction Analysis by Category</h5>
+            <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <div style="display: flex; margin-bottom: 10px;">
+                  <div style="flex-grow: 1;">Electronics</div>
+                  <div style="width: 80px; text-align: right;">$100.38</div>
+                  <div style="width: 50px; text-align: right;">2</div>
+                </div>
+                <div style="height: 25px; background-color: #3498db; width: 100%; border-radius: 4px; margin-bottom: 15px;"></div>
+                
+                <div style="display: flex; margin-bottom: 10px;">
+                  <div style="flex-grow: 1;">Clothing</div>
+                  <div style="width: 80px; text-align: right;">$65.50</div>
+                  <div style="width: 50px; text-align: right;">1</div>
+                </div>
+                <div style="height: 25px; background-color: #2ecc71; width: 50%; border-radius: 4px;"></div>
+              </div>
+            </div>
+          `;
+        }, 1000);
+      } else {
+        outputArea.style.display = 'block';
+        visualizationArea.style.display = 'none';
+        this.innerHTML = '<i class="fas fa-chart-bar me-1"></i>Visualization';
+      }
+    });
+
+    // Reset button
+    document.getElementById('reset-code').addEventListener('click', function() {
+      const language = document.getElementById('language-select').value;
+      if (language === 'python') {
+        editor.setValue(starterCodePython);
+      } else if (language === 'r') {
+        editor.setValue(starterCodeR);
+      }
+    });
+
+    // Submit solution button
+    document.getElementById('submit-solution').addEventListener('click', function() {
+      const output = document.getElementById('code-output');
+      output.textContent = "Submitting solution...\n\n";
+      
+      // Simulate submission and assessment
+      setTimeout(() => {
+        output.textContent += "✅ Solution submitted and accepted!\n\n";
+        output.textContent += "🎉 You've earned 30 XP for completing this knowledge point!\n";
+        output.textContent += "👍 Demonstrated mastery of pandas DataFrame operations\n";
+        
+        // Update XP in navbar
+        const currentXP = parseInt(document.getElementById('xp-earned').textContent);
+        document.getElementById('xp-earned').textContent = currentXP + 30;
+        
+        // Update all mastery steps
+        for (let i = 1; i <= 5; i++) {
+          document.getElementById(`mastery-${i}`).classList.add('complete');
+          document.getElementById(`mastery-${i}`).classList.remove('current');
+        }
+        
+        // Disable submit button
+        this.disabled = true;
+        this.textContent = "Mastery Achieved!";
+        this.className = "btn btn-lg btn-success";
+      }, 1500);
+    });
+
+    // Hint system
+    document.getElementById('show-hint-1').addEventListener('click', function() {
+      document.getElementById('hint1').style.display = 'block';
+      this.disabled = true;
+      document.getElementById('show-hint-2').disabled = false;
+    });
+    
+    document.getElementById('show-hint-2').addEventListener('click', function() {
+      document.getElementById('hint2').style.display = 'block';
+      this.disabled = true;
+      document.getElementById('show-hint-3').disabled = false;
+    });
+    
+    document.getElementById('show-hint-3').addEventListener('click', function() {
+      document.getElementById('hint3').style.display = 'block';
+      this.disabled = true;
+      document.getElementById('show-hint-4').disabled = false;
+    });
+    
+    document.getElementById('show-hint-4').addEventListener('click', function() {
+      document.getElementById('hint4').style.display = 'block';
+      this.disabled = true;
+      document.getElementById('show-hint-5').disabled = false;
+    });
+    
+    document.getElementById('show-hint-5').addEventListener('click', function() {
+      document.getElementById('hint5').style.display = 'block';
+      this.disabled = true;
+    });
+
+    // Accessibility features
+    document.getElementById('toggle-contrast').addEventListener('click', function() {
+      document.body.classList.toggle('high-contrast');
+    });
+    
+    document.getElementById('toggle-dyslexia').addEventListener('click', function() {
+      document.body.classList.toggle('dyslexia-friendly');
+    });
+    
+    let fontSize = 14;
+    document.getElementById('increase-font').addEventListener('click', function() {
+      fontSize += 2;
+      editor.getWrapperElement().style.fontSize = fontSize + 'px';
+    });
+    
+    document.getElementById('decrease-font').addEventListener('click', function() {
+      fontSize = Math.max(10, fontSize - 2);
+      editor.getWrapperElement().style.fontSize = fontSize + 'px';
+    });
+  </script>
+</body>
+</html>
