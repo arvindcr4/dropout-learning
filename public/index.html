@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Math Academy Lesson Generator</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -97,16 +98,179 @@
     .lesson-overview {
       color: #666;
     }
+    .progress-bar {
+      height: 8px;
+      background-color: #f1f1f1;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .progress-value {
+      height: 100%;
+      background-color: #3498db;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.5s;
+    }
+    .module-card {
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .module-header {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .module-title {
+      font-weight: bold;
+      margin: 0;
+    }
+    .module-body {
+      padding: 15px;
+    }
+    .module-progress {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .module-progress-text {
+      width: 80px;
+      font-size: 0.85rem;
+      text-align: right;
+      margin-left: 10px;
+    }
+    .badge-xp {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    .xp-icon {
+      margin-right: 5px;
+      color: #ff9800;
+    }
+    .xp-dashboard {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .daily-goal-container {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .goal-progress {
+      flex: 1;
+      margin: 0 15px;
+    }
+    .daily-indicator {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #f1f1f1;
+      margin-right: 5px;
+    }
+    .daily-indicator.completed {
+      background-color: #28a745;
+    }
+    .daily-indicator.partial {
+      background-color: #ffc107;
+    }
   </style>
 </head>
 <body>
   <nav class="navbar">
     <div class="container">
       <span class="navbar-brand">Math Academy Lesson Generator</span>
+      <div>
+        <button id="nav-lessons-btn" class="btn btn-sm btn-outline-light active">Lessons</button>
+        <button id="nav-modules-btn" class="btn btn-sm btn-outline-light">Modules & Progress</button>
+      </div>
     </div>
   </nav>
 
   <div class="container mt-4">
+    <div id="modules-dashboard" class="hidden">
+      <div class="xp-dashboard">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3>Your Learning Progress</h3>
+          <div class="badge-xp">
+            <i class="fas fa-star xp-icon"></i>
+            <span id="total-xp">0</span> XP
+          </div>
+        </div>
+        
+        <div class="mt-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5>Daily XP Goal</h5>
+            <div>
+              <span id="daily-xp">0</span>/<span id="daily-xp-goal">100</span> XP
+            </div>
+          </div>
+          <div class="daily-goal-container">
+            <div>Today</div>
+            <div class="goal-progress">
+              <div class="progress-bar">
+                <div id="daily-progress" class="progress-value" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div>Goal</div>
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <h5>Weekly Streak</h5>
+          <div class="d-flex justify-content-between mt-2" id="weekly-streak">
+            <div class="text-center">
+              <div class="daily-indicator" data-day="0"></div>
+              <div>Mon</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="1"></div>
+              <div>Tue</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="2"></div>
+              <div>Wed</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="3"></div>
+              <div>Thu</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="4"></div>
+              <div>Fri</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="5"></div>
+              <div>Sat</div>
+            </div>
+            <div class="text-center">
+              <div class="daily-indicator" data-day="6"></div>
+              <div>Sun</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <h3 class="mb-3">Lesson Modules</h3>
+      <div id="modules-container">
+        <!-- Module cards will be added here -->
+      </div>
+    </div>
     <div id="error-container" class="alert alert-danger hidden"></div>
     <div id="loading-container" class="alert alert-info hidden">
       <div class="d-flex align-items-center">
@@ -199,15 +363,41 @@
     const lessonsContainer = document.getElementById('lessons-container');
     const lessonDetailContainer = document.getElementById('lesson-detail-container');
     const lessonDetailTitle = document.getElementById('lesson-detail-title');
+    const modulesDashboard = document.getElementById('modules-dashboard');
+    const modulesContainer = document.getElementById('modules-container');
     
     // Navigation buttons
     const backToUploadBtn = document.getElementById('back-to-upload');
     const backToLessonsBtn = document.getElementById('back-to-lessons');
+    const navLessonsBtn = document.getElementById('nav-lessons-btn');
+    const navModulesBtn = document.getElementById('nav-modules-btn');
+    
+    // XP elements
+    const totalXpElement = document.getElementById('total-xp');
+    const dailyXpElement = document.getElementById('daily-xp');
+    const dailyXpGoalElement = document.getElementById('daily-xp-goal');
+    const dailyProgressElement = document.getElementById('daily-progress');
 
     // State
     let currentFile = null;
     let generatedLessons = [];
     let currentLesson = null;
+    let userProgress = {
+      totalXp: 0,
+      dailyXp: 0,
+      dailyGoal: 100,
+      streak: {
+        monday: 0,
+        tuesday: 0,
+        wednesday: 0,
+        thursday: 0,
+        friday: 0,
+        saturday: 0,
+        sunday: 0
+      },
+      completedLessons: [],
+      moduleProgress: {}
+    };
 
     // Event Listeners
     pdfUploader.addEventListener('click', () => {
@@ -258,9 +448,26 @@
     backToLessonsBtn.addEventListener('click', () => {
       showLessonsSection();
     });
+    
+    navLessonsBtn.addEventListener('click', () => {
+      navLessonsBtn.classList.add('active');
+      navModulesBtn.classList.remove('active');
+      showActiveSection('lessons');
+    });
+    
+    navModulesBtn.addEventListener('click', () => {
+      navModulesBtn.classList.add('active');
+      navLessonsBtn.classList.remove('active');
+      showActiveSection('modules');
+      generateModules();
+      updateXpDisplay();
+    });
 
     // Auto-load sample PDF
     window.addEventListener('DOMContentLoaded', () => {
+      // Load saved progress from localStorage
+      loadUserProgress();
+      
       // After a delay, try to load the sample PDF
       setTimeout(() => {
         loadSamplePDF();
@@ -301,18 +508,47 @@
       uploadSection.classList.remove('hidden');
       lessonsSection.classList.add('hidden');
       lessonDetailSection.classList.add('hidden');
+      modulesDashboard.classList.add('hidden');
     }
 
     function showLessonsSection() {
       uploadSection.classList.add('hidden');
       lessonsSection.classList.remove('hidden');
       lessonDetailSection.classList.add('hidden');
+      modulesDashboard.classList.add('hidden');
     }
 
     function showLessonDetailSection() {
       uploadSection.classList.add('hidden');
       lessonsSection.classList.add('hidden');
       lessonDetailSection.classList.remove('hidden');
+      modulesDashboard.classList.add('hidden');
+    }
+    
+    function showModulesSection() {
+      uploadSection.classList.add('hidden');
+      lessonsSection.classList.add('hidden');
+      lessonDetailSection.classList.add('hidden');
+      modulesDashboard.classList.remove('hidden');
+    }
+    
+    function showActiveSection(section) {
+      switch(section) {
+        case 'lessons':
+          if (currentLesson) {
+            showLessonDetailSection();
+          } else if (generatedLessons.length > 0) {
+            showLessonsSection();
+          } else {
+            showUploadSection();
+          }
+          break;
+        case 'modules':
+          showModulesSection();
+          break;
+        default:
+          showUploadSection();
+      }
     }
 
     function displayPDFInfo() {
@@ -461,11 +697,30 @@
     function displayLessonDetail(lesson) {
       lessonDetailTitle.textContent = lesson.title;
       
+      // Calculate XP for this lesson
+      const lessonXp = 25 + (5 * lesson.id);
+      
+      // Check if lesson is already completed
+      const isCompleted = userProgress.completedLessons.includes(lesson.id);
+      
       // Build lesson detail content
       let content = `
-        <div class="mb-4">
-          <h4>Overview</h4>
-          <p>${lesson.overview}</p>
+        <div class="mb-4 d-flex justify-content-between align-items-start">
+          <div>
+            <h4>Overview</h4>
+            <p>${lesson.overview}</p>
+          </div>
+          <div class="text-center ms-3" style="min-width: 120px;">
+            ${isCompleted ? 
+              `<div class="badge bg-success p-2 mb-2"><i class="fas fa-check"></i> Completed</div>` : 
+              `<div class="badge-xp p-2 mb-2"><i class="fas fa-star xp-icon"></i> ${lessonXp} XP</div>`
+            }
+            <div>
+              <button id="mark-complete-btn" class="btn btn-sm btn-primary mt-2" ${isCompleted ? 'disabled' : ''}>
+                ${isCompleted ? 'Completed' : 'Mark as Complete'}
+              </button>
+            </div>
+          </div>
         </div>
         
         <div class="mb-4">
@@ -512,7 +767,276 @@
       `;
       
       lessonDetailContainer.innerHTML = content;
+      
+      // Add event listener for the mark complete button
+      const markCompleteBtn = document.getElementById('mark-complete-btn');
+      if (markCompleteBtn && !isCompleted) {
+        markCompleteBtn.addEventListener('click', () => {
+          awardXp(lesson.id, lessonXp);
+          
+          // Update button state
+          markCompleteBtn.disabled = true;
+          markCompleteBtn.textContent = 'Completed';
+          
+          // Update lesson detail display to show completion
+          const xpBadge = markCompleteBtn.closest('div').previousElementSibling;
+          xpBadge.className = 'badge bg-success p-2 mb-2';
+          xpBadge.innerHTML = '<i class="fas fa-check"></i> Completed';
+          
+          // Show a congratulations message
+          showError(`Congratulations! You earned ${lessonXp} XP for completing this lesson.`);
+        });
+      }
+      
       showLessonDetailSection();
+    }
+
+    // XP and Modules functions
+    function loadUserProgress() {
+      const savedProgress = localStorage.getItem('mathAcademyProgress');
+      if (savedProgress) {
+        try {
+          userProgress = JSON.parse(savedProgress);
+          updateXpDisplay();
+        } catch (e) {
+          console.error('Error loading saved progress:', e);
+        }
+      }
+    }
+    
+    function saveUserProgress() {
+      localStorage.setItem('mathAcademyProgress', JSON.stringify(userProgress));
+    }
+    
+    function updateXpDisplay() {
+      totalXpElement.textContent = userProgress.totalXp;
+      dailyXpElement.textContent = userProgress.dailyXp;
+      dailyXpGoalElement.textContent = userProgress.dailyGoal;
+      
+      // Update daily progress
+      const progressPercentage = Math.min(100, (userProgress.dailyXp / userProgress.dailyGoal) * 100);
+      dailyProgressElement.style.width = `${progressPercentage}%`;
+      
+      // Update streak indicators
+      updateStreakDisplay();
+    }
+    
+    function updateStreakDisplay() {
+      const today = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
+      const weekMap = [6, 0, 1, 2, 3, 4, 5]; // Map JS day to our display (0 = Monday in our display)
+      
+      const streakDays = document.querySelectorAll('.daily-indicator');
+      streakDays.forEach(day => {
+        const dayIndex = parseInt(day.getAttribute('data-day'));
+        const dayName = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][dayIndex];
+        const progress = userProgress.streak[dayName];
+        
+        day.classList.remove('completed', 'partial');
+        
+        if (progress >= userProgress.dailyGoal) {
+          day.classList.add('completed');
+        } else if (progress > 0) {
+          day.classList.add('partial');
+        }
+        
+        // Highlight today
+        if (weekMap[today] === dayIndex) {
+          day.style.border = '2px solid #3498db';
+        } else {
+          day.style.border = 'none';
+        }
+      });
+    }
+    
+    function generateModules() {
+      // If the modules container already has content, don't regenerate
+      if (modulesContainer.children.length > 0) return;
+      
+      const modules = [
+        {
+          id: 'math-academy-foundations',
+          title: 'Math Academy Foundations',
+          description: 'Core principles and approaches of the Math Academy method',
+          lessons: [1, 2, 3],
+          xpPerLesson: 25
+        },
+        {
+          id: 'cognitive-science',
+          title: 'Cognitive Science in Learning',
+          description: 'How the brain works and implications for learning design',
+          lessons: [3, 4],
+          xpPerLesson: 30
+        },
+        {
+          id: 'knowledge-graph',
+          title: 'Knowledge Graph Implementation',
+          description: 'Building structured learning pathways with knowledge graphs',
+          lessons: [4, 5],
+          xpPerLesson: 35
+        }
+      ];
+      
+      modules.forEach(module => {
+        const moduleCard = document.createElement('div');
+        moduleCard.className = 'module-card';
+        
+        // Initialize module progress if it doesn't exist
+        if (!userProgress.moduleProgress[module.id]) {
+          userProgress.moduleProgress[module.id] = {
+            completedLessons: [],
+            totalLessons: module.lessons.length
+          };
+        }
+        
+        // Calculate progress percentage
+        const completedCount = userProgress.moduleProgress[module.id].completedLessons.length;
+        const totalLessons = module.lessons.length;
+        const progressPercentage = (completedCount / totalLessons) * 100;
+        
+        moduleCard.innerHTML = `
+          <div class="module-header">
+            <h5 class="module-title">${module.title}</h5>
+            <div class="badge-xp">
+              <i class="fas fa-star xp-icon"></i>
+              ${module.xpPerLesson} XP per lesson
+            </div>
+          </div>
+          <div class="module-body">
+            <p>${module.description}</p>
+            <div class="module-progress">
+              <div class="progress-bar" style="flex-grow: 1;">
+                <div class="progress-value" style="width: ${progressPercentage}%;"></div>
+              </div>
+              <div class="module-progress-text">
+                ${completedCount}/${totalLessons} complete
+              </div>
+            </div>
+            <div class="mt-3">
+              <button class="btn btn-outline-primary view-module-btn" data-module="${module.id}">
+                View Lessons
+              </button>
+            </div>
+          </div>
+        `;
+        
+        moduleCard.querySelector('.view-module-btn').addEventListener('click', () => {
+          viewModuleLessons(module);
+        });
+        
+        modulesContainer.appendChild(moduleCard);
+      });
+      
+      saveUserProgress();
+    }
+    
+    function viewModuleLessons(module) {
+      // Display all lessons in this module
+      navLessonsBtn.classList.add('active');
+      navModulesBtn.classList.remove('active');
+      showLessonsSection();
+      
+      // Filter lessons for this module
+      displayLessons(module.lessons);
+    }
+    
+    function awardXp(lessonId, amount) {
+      // Find which module this lesson belongs to
+      let moduleId = null;
+      
+      // Find module by lessons
+      for (const [key, value] of Object.entries(userProgress.moduleProgress)) {
+        if (value.completedLessons.includes(lessonId)) {
+          moduleId = key;
+          break;
+        }
+      }
+      
+      // If already completed, don't award XP again
+      if (moduleId && userProgress.completedLessons.includes(lessonId)) {
+        return;
+      }
+      
+      // Award XP
+      userProgress.totalXp += amount;
+      userProgress.dailyXp += amount;
+      
+      // Mark lesson as completed
+      if (!userProgress.completedLessons.includes(lessonId)) {
+        userProgress.completedLessons.push(lessonId);
+      }
+      
+      // Add to module progress if module found
+      if (moduleId && !userProgress.moduleProgress[moduleId].completedLessons.includes(lessonId)) {
+        userProgress.moduleProgress[moduleId].completedLessons.push(lessonId);
+      }
+      
+      // Update display
+      updateXpDisplay();
+      saveUserProgress();
+    }
+    
+    function displayLessons(moduleLesson = null) {
+      lessonsContainer.innerHTML = '';
+      
+      if (generatedLessons.length === 0) {
+        lessonsContainer.innerHTML = '<p class="text-center">No lessons generated yet.</p>';
+        return;
+      }
+      
+      let lessonsToDisplay = generatedLessons;
+      
+      // If module lessons specified, filter to just those
+      if (moduleLesson) {
+        lessonsToDisplay = generatedLessons.filter(lesson => moduleLesson.includes(lesson.id));
+      }
+      
+      const lessonList = document.createElement('ul');
+      lessonList.className = 'lesson-list';
+      
+      lessonsToDisplay.forEach(lesson => {
+        const lessonItem = document.createElement('li');
+        lessonItem.className = 'lesson-item';
+        
+        // Check if lesson is completed
+        const isCompleted = userProgress.completedLessons.includes(lesson.id);
+        if (isCompleted) {
+          lessonItem.classList.add('bg-light');
+        }
+        
+        lessonItem.onclick = () => {
+          currentLesson = lesson;
+          displayLessonDetail(lesson);
+        };
+        
+        const lessonTitle = document.createElement('div');
+        lessonTitle.className = 'd-flex justify-content-between align-items-center';
+        
+        const title = document.createElement('div');
+        title.className = 'lesson-title';
+        title.textContent = lesson.title;
+        
+        const badge = document.createElement('div');
+        if (isCompleted) {
+          badge.className = 'badge bg-success';
+          badge.innerHTML = '<i class="fas fa-check"></i> Completed';
+        } else {
+          badge.className = 'badge-xp';
+          badge.innerHTML = `<i class="fas fa-star xp-icon"></i> ${25 + (5 * lesson.id)} XP`;
+        }
+        
+        lessonTitle.appendChild(title);
+        lessonTitle.appendChild(badge);
+        
+        const lessonOverview = document.createElement('div');
+        lessonOverview.className = 'lesson-overview';
+        lessonOverview.textContent = lesson.overview;
+        
+        lessonItem.appendChild(lessonTitle);
+        lessonItem.appendChild(lessonOverview);
+        lessonList.appendChild(lessonItem);
+      });
+      
+      lessonsContainer.appendChild(lessonList);
     }
 
     function generateMockLessons(filename) {
