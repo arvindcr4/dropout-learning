@@ -602,5 +602,5 @@ app.post('/api/knowledge-points/:id/mastery', (req, res) => {
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Math Academy Lesson Generator running at http://localhost:${port}`);
+  console.log(`Dropout Learning running at http://localhost:${port}`);
 });
