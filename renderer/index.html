@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Academy Lesson Generator</title>
+  <link rel="stylesheet" href="/vendor/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/vendor/react.production.min.js"></script>
+  <script src="/vendor/react-dom.production.min.js"></script>
+  <script src="/vendor/babel.min.js"></script>
+  <script src="/vendor/pdf.min.js"></script>
+  <script src="/vendor/d3.v7.min.js"></script>
+  <script>
+    // Set up PDF.js worker
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Load components -->
+  <script type="text/babel" src="/components/NavigationBar.jsx"></script>
+  <script type="text/babel" src="/components/PDFUploader.jsx"></script>
+  <script type="text/babel" src="/components/KnowledgeGraphVisualizer.jsx"></script>
+  <script type="text/babel" src="/components/LessonViewer.jsx"></script>
+  <script type="text/babel" src="/components/TopicPrerequisites.jsx"></script>
+  <script type="text/babel" src="/components/Dashboard.jsx"></script>
+  
+  <!-- Load processing scripts -->
+  <script src="/js/pdfProcessor.js"></script>
+  <script src="/js/contentAnalyzer.js"></script>
+  <script src="/js/knowledgeGraph.js"></script>
+  <script src="/js/lessonGenerator.js"></script>
+  
+  <!-- Load main app -->
+  <script type="text/babel" src="/js/app.js"></script>
+
+  <!-- Add a simple script to load the sample PDF when the app loads -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // After a delay, try to load the sample PDF
+      setTimeout(() => {
+        fetch('/api/sample-pdf')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && window.appState) {
+              window.appState.processPDF({
+                name: data.fileName,
+                data: data.pdfBase64
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error loading sample PDF:', error);
+          });
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

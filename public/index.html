@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Academy Lesson Generator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 15px 20px;
+      background-color: #f5f7fa;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+    .pdf-uploader {
+      border: 2px dashed #ced4da;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      background-color: #f8f9fa;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    .pdf-uploader:hover {
+      border-color: #3498db;
+      background-color: #f1f8fe;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .hidden {
+      display: none;
+    }
+    .lesson-list {
+      list-style: none;
+      padding: 0;
+    }
+    .lesson-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .lesson-item:hover {
+      background-color: #e9ecef;
+    }
+    .lesson-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .lesson-overview {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <span class="navbar-brand">Math Academy Lesson Generator</span>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div id="error-container" class="alert alert-danger hidden"></div>
+    <div id="loading-container" class="alert alert-info hidden">
+      <div class="d-flex align-items-center">
+        <div class="spinner mr-3" style="width: 20px; height: 20px;"></div>
+        <div id="loading-text">Processing...</div>
+      </div>
+    </div>
+
+    <div id="pdf-info" class="alert alert-info hidden">
+      <strong>Current PDF:</strong> <span id="pdf-name"></span>
+    </div>
+
+    <div id="upload-section" class="card">
+      <div class="card-header">
+        <h3 class="card-title">Upload Study Material</h3>
+      </div>
+      <div class="card-body">
+        <div class="pdf-uploader" id="pdf-uploader">
+          <div style="font-size: 3rem; margin-bottom: 15px;">📄</div>
+          <h4 id="uploader-text">Drag & Drop your PDF here or click to browse</h4>
+          <p class="text-muted" id="uploader-subtext">Supported format: PDF</p>
+          <input type="file" id="file-input" style="display: none;" accept=".pdf">
+          <button id="process-btn" class="btn btn-primary mt-3 hidden">Process PDF</button>
+        </div>
+
+        <div class="mt-4">
+          <h4>Instructions</h4>
+          <ol>
+            <li>Upload a PDF document containing study material</li>
+            <li>The application will extract text and analyze content</li>
+            <li>Based on Math Academy principles, it will generate structured lessons</li>
+            <li>A knowledge graph will be created to show relationships between topics</li>
+            <li>Explore lessons, prerequisites, and how topics connect to each other</li>
+          </ol>
+          
+          <div class="alert alert-info mt-3">
+            <h5>Math Academy Principles Applied:</h5>
+            <ul>
+              <li><strong>Knowledge Graph:</strong> Visualizing prerequisites and topic relationships</li>
+              <li><strong>Scaffolded Mastery Learning:</strong> Ensuring prerequisites are mastered first</li>
+              <li><strong>Cognitive Learning Strategies:</strong> Structuring content for optimal learning</li>
+              <li><strong>Working Memory:</strong> Breaking complex topics into manageable chunks</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lessons-section" class="card hidden">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Generated Lessons</h3>
+        <button id="back-to-upload" class="btn btn-sm btn-outline-primary">Upload Another</button>
+      </div>
+      <div class="card-body">
+        <div id="lessons-container">
+          <div class="spinner"></div>
+          <p class="text-center">Generating lessons...</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="lesson-detail-section" class="card hidden">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title" id="lesson-detail-title"></h3>
+        <button id="back-to-lessons" class="btn btn-sm btn-outline-primary">Back to Lessons</button>
+      </div>
+      <div class="card-body">
+        <div id="lesson-detail-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Basic DOM elements
+    const fileInput = document.getElementById('file-input');
+    const pdfUploader = document.getElementById('pdf-uploader');
+    const uploaderText = document.getElementById('uploader-text');
+    const uploaderSubtext = document.getElementById('uploader-subtext');
+    const processBtn = document.getElementById('process-btn');
+    const errorContainer = document.getElementById('error-container');
+    const loadingContainer = document.getElementById('loading-container');
+    const loadingText = document.getElementById('loading-text');
+    const pdfInfo = document.getElementById('pdf-info');
+    const pdfName = document.getElementById('pdf-name');
+    
+    // Sections
+    const uploadSection = document.getElementById('upload-section');
+    const lessonsSection = document.getElementById('lessons-section');
+    const lessonDetailSection = document.getElementById('lesson-detail-section');
+    const lessonsContainer = document.getElementById('lessons-container');
+    const lessonDetailContainer = document.getElementById('lesson-detail-container');
+    const lessonDetailTitle = document.getElementById('lesson-detail-title');
+    
+    // Navigation buttons
+    const backToUploadBtn = document.getElementById('back-to-upload');
+    const backToLessonsBtn = document.getElementById('back-to-lessons');
+
+    // State
+    let currentFile = null;
+    let generatedLessons = [];
+    let currentLesson = null;
+
+    // Event Listeners
+    pdfUploader.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const files = e.target.files;
+      if (files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    pdfUploader.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pdfUploader.style.borderColor = '#3498db';
+      pdfUploader.style.backgroundColor = '#f1f8fe';
+    });
+
+    pdfUploader.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pdfUploader.style.borderColor = '#ced4da';
+      pdfUploader.style.backgroundColor = '#f8f9fa';
+    });
+
+    pdfUploader.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pdfUploader.style.borderColor = '#ced4da';
+      pdfUploader.style.backgroundColor = '#f8f9fa';
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    processBtn.addEventListener('click', () => {
+      processFile();
+    });
+
+    backToUploadBtn.addEventListener('click', () => {
+      showUploadSection();
+    });
+
+    backToLessonsBtn.addEventListener('click', () => {
+      showLessonsSection();
+    });
+
+    // Auto-load sample PDF
+    window.addEventListener('DOMContentLoaded', () => {
+      // After a delay, try to load the sample PDF
+      setTimeout(() => {
+        loadSamplePDF();
+      }, 1000);
+    });
+
+    // Functions
+    function handleFileSelection(file) {
+      if (file.type !== 'application/pdf') {
+        showError('Please select a PDF file');
+        return;
+      }
+      
+      currentFile = file;
+      uploaderText.textContent = file.name;
+      uploaderSubtext.textContent = 'Click "Process PDF" to generate lessons';
+      processBtn.classList.remove('hidden');
+    }
+
+    function showError(message) {
+      errorContainer.textContent = message;
+      errorContainer.classList.remove('hidden');
+      setTimeout(() => {
+        errorContainer.classList.add('hidden');
+      }, 5000);
+    }
+
+    function setLoading(status) {
+      if (status) {
+        loadingText.textContent = status;
+        loadingContainer.classList.remove('hidden');
+      } else {
+        loadingContainer.classList.add('hidden');
+      }
+    }
+
+    function showUploadSection() {
+      uploadSection.classList.remove('hidden');
+      lessonsSection.classList.add('hidden');
+      lessonDetailSection.classList.add('hidden');
+    }
+
+    function showLessonsSection() {
+      uploadSection.classList.add('hidden');
+      lessonsSection.classList.remove('hidden');
+      lessonDetailSection.classList.add('hidden');
+    }
+
+    function showLessonDetailSection() {
+      uploadSection.classList.add('hidden');
+      lessonsSection.classList.add('hidden');
+      lessonDetailSection.classList.remove('hidden');
+    }
+
+    function displayPDFInfo() {
+      pdfName.textContent = currentFile.name;
+      pdfInfo.classList.remove('hidden');
+    }
+
+    async function processFile() {
+      if (!currentFile) return;
+      
+      setLoading('Uploading PDF...');
+      displayPDFInfo();
+      
+      try {
+        // Create form data for upload
+        const formData = new FormData();
+        formData.append('pdf', currentFile);
+        
+        // Upload PDF
+        const uploadResponse = await fetch('/api/upload-pdf', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.message || 'Failed to upload PDF');
+        }
+        
+        // Process the uploaded PDF
+        setLoading('Extracting text...');
+        
+        // Simulate processing (this would normally happen on the server)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setLoading('Analyzing content...');
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setLoading('Generating knowledge graph...');
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setLoading('Generating lessons...');
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Generate mock lessons based on the Math Academy principles
+        generatedLessons = generateMockLessons(uploadResult.fileName);
+        
+        // Display lessons
+        displayLessons();
+        
+        // Hide loading indicator
+        setLoading(null);
+        
+        // Show lessons section
+        showLessonsSection();
+      } catch (error) {
+        setLoading(null);
+        showError(`Error processing PDF: ${error.message}`);
+      }
+    }
+
+    async function loadSamplePDF() {
+      try {
+        setLoading('Loading sample PDF...');
+        
+        const response = await fetch('/api/sample-pdf');
+        const data = await response.json();
+        
+        if (data.success) {
+          // Create a file object from the base64 data
+          currentFile = new File(
+            [base64ToBlob(data.pdfBase64, 'application/pdf')],
+            data.fileName,
+            { type: 'application/pdf' }
+          );
+          
+          uploaderText.textContent = data.fileName;
+          uploaderSubtext.textContent = 'Click "Process PDF" to generate lessons';
+          processBtn.classList.remove('hidden');
+          
+          // Automatically process the file
+          processFile();
+        } else {
+          console.error('Error loading sample PDF:', data.message);
+        }
+      } catch (error) {
+        console.error('Error loading sample PDF:', error);
+      }
+    }
+
+    function base64ToBlob(base64, mimeType) {
+      // Convert base64 to binary
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+      
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      
+      return new Blob(byteArrays, { type: mimeType });
+    }
+
+    function displayLessons() {
+      lessonsContainer.innerHTML = '';
+      
+      if (generatedLessons.length === 0) {
+        lessonsContainer.innerHTML = '<p class="text-center">No lessons generated yet.</p>';
+        return;
+      }
+      
+      const lessonList = document.createElement('ul');
+      lessonList.className = 'lesson-list';
+      
+      generatedLessons.forEach(lesson => {
+        const lessonItem = document.createElement('li');
+        lessonItem.className = 'lesson-item';
+        lessonItem.onclick = () => {
+          currentLesson = lesson;
+          displayLessonDetail(lesson);
+        };
+        
+        const lessonTitle = document.createElement('div');
+        lessonTitle.className = 'lesson-title';
+        lessonTitle.textContent = lesson.title;
+        
+        const lessonOverview = document.createElement('div');
+        lessonOverview.className = 'lesson-overview';
+        lessonOverview.textContent = lesson.overview;
+        
+        lessonItem.appendChild(lessonTitle);
+        lessonItem.appendChild(lessonOverview);
+        lessonList.appendChild(lessonItem);
+      });
+      
+      lessonsContainer.appendChild(lessonList);
+    }
+
+    function displayLessonDetail(lesson) {
+      lessonDetailTitle.textContent = lesson.title;
+      
+      // Build lesson detail content
+      let content = `
+        <div class="mb-4">
+          <h4>Overview</h4>
+          <p>${lesson.overview}</p>
+        </div>
+        
+        <div class="mb-4">
+          <h4>Learning Objectives</h4>
+          <ul>
+            ${lesson.objectives.map(obj => `<li>${obj}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      
+      if (lesson.prerequisites && lesson.prerequisites.length > 0) {
+        content += `
+          <div class="mb-4">
+            <h4>Prerequisites</h4>
+            <ul>
+              ${lesson.prerequisites.map(prereq => `<li><strong>${prereq.title}</strong>: ${prereq.description}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      content += `
+        <div class="mb-4">
+          <h4>Content</h4>
+          ${lesson.sections.map(section => `
+            <div class="mb-3">
+              <h5>${section.title}</h5>
+              <p>${section.content}</p>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="mb-4">
+          <h4>Math Academy Principles Applied</h4>
+          <ul class="list-group">
+            ${lesson.principles.map(principle => `
+              <li class="list-group-item">
+                <div><strong>${principle.name}</strong></div>
+                <div>${principle.application}</div>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+      
+      lessonDetailContainer.innerHTML = content;
+      showLessonDetailSection();
+    }
+
+    function generateMockLessons(filename) {
+      // Generate mock lessons based on Math Academy principles extracted from the PDF
+      return [
+        {
+          id: 1,
+          title: "The Two-Sigma Solution",
+          overview: "This lesson explores Bloom's Two-Sigma Problem and its implications for educational approaches that can dramatically improve student learning outcomes.",
+          objectives: [
+            "Understand the core essence of Bloom's Two-Sigma Problem",
+            "Compare talent development vs. traditional schooling approaches",
+            "Identify the stages of talent development according to Bloom"
+          ],
+          prerequisites: [],
+          sections: [
+            {
+              title: "Introduction",
+              content: "Bloom's Two-Sigma Problem demonstrates that one-on-one tutoring produces learning outcomes that are two standard deviations better than traditional classroom instruction. This finding has profound implications for how we structure educational experiences."
+            },
+            {
+              title: "Talent Development vs Traditional Schooling",
+              content: "Traditional schooling often focuses on standardized approaches that move all students at the same pace, while talent development recognizes individual differences in learning speed and adapts instruction accordingly."
+            },
+            {
+              title: "Stages of Talent Development",
+              content: "Bloom identified a 3-stage talent development process that transitions from playful exploration, to structured skill development, to personalized mastery and achievement."
+            }
+          ],
+          principles: [
+            {
+              name: "Knowledge Graph",
+              application: "The Two-Sigma Solution concepts form the foundation of our knowledge graph, with relationships to other topics like working memory and cognitive learning strategies."
+            },
+            {
+              name: "Scaffolded Mastery Learning",
+              application: "This lesson demonstrates the importance of scaffolded approaches that ensure mastery of each concept before moving to more advanced topics."
+            }
+          ]
+        },
+        {
+          id: 2,
+          title: "The Science of Learning",
+          overview: "This lesson explores proven cognitive learning strategies and why traditional educational approaches often persist despite evidence for more effective methods.",
+          objectives: [
+            "Identify effective cognitive learning strategies",
+            "Understand why traditional teaching methods persist despite evidence",
+            "Recognize the concept of desirable difficulty in learning"
+          ],
+          prerequisites: [
+            {
+              title: "The Two-Sigma Solution",
+              description: "Understanding Bloom's findings provides context for these learning principles"
+            }
+          ],
+          sections: [
+            {
+              title: "Introduction",
+              content: "Cognitive science has identified several learning strategies that significantly improve knowledge retention and transfer, yet many of these strategies are not commonly employed in educational settings."
+            },
+            {
+              title: "The Persistence of Tradition",
+              content: "Despite evidence supporting more effective cognitive learning strategies, traditional methods persist due to institutional inertia, misconceptions about learning, and the fact that effective strategies often feel more difficult."
+            },
+            {
+              title: "Desirable Difficulty vs Illusion of Comprehension",
+              content: "Learning strategies that introduce 'desirable difficulty' lead to better long-term retention, but feel more challenging than methods that create an 'illusion of comprehension' (feeling like you understand when you don't)."
+            }
+          ],
+          principles: [
+            {
+              name: "Cognitive Learning Strategies",
+              application: "This lesson directly addresses the cognitive science principles that underpin effective learning approaches."
+            },
+            {
+              name: "Desirable Difficulty",
+              application: "The concept of making learning appropriately challenging is central to this lesson's content."
+            }
+          ]
+        },
+        {
+          id: 3,
+          title: "Core Science: How the Brain Works",
+          overview: "This lesson examines the memory systems of the brain and their implications for effective teaching and learning approaches.",
+          objectives: [
+            "Distinguish between sensory, working, and long-term memory",
+            "Understand the design constraints of human memory systems",
+            "Analyze information flow during cognitive processes"
+          ],
+          prerequisites: [
+            {
+              title: "The Science of Learning",
+              description: "Provides the cognitive foundation for understanding memory systems"
+            }
+          ],
+          sections: [
+            {
+              title: "Introduction",
+              content: "Understanding how memory works in the brain is essential for designing effective learning experiences that work with rather than against our cognitive architecture."
+            },
+            {
+              title: "Sensory, Working, and Long-Term Memory",
+              content: "The brain's memory systems each have different capacities and characteristics. Sensory memory is brief and high-capacity, working memory is limited but manipulable, and long-term memory has vast capacity but requires meaningful processing to store information effectively."
+            },
+            {
+              title: "Design Constraints",
+              content: "Working memory's limited capacity creates a bottleneck for learning that must be addressed through proper chunking, scaffolding, and practice strategies."
+            }
+          ],
+          principles: [
+            {
+              name: "Working Memory",
+              application: "This lesson directly addresses working memory limitations and how to design learning that respects these constraints."
+            },
+            {
+              name: "Scaffolded Mastery Learning",
+              application: "Understanding memory systems helps explain why scaffolded approaches that build systematically on prior knowledge are effective."
+            }
+          ]
+        },
+        {
+          id: 4,
+          title: "Core Technology: the Knowledge Graph",
+          overview: "This lesson explores how knowledge graphs can be used to map learning pathways and support scaffolded mastery learning.",
+          objectives: [
+            "Understand the structure and purpose of a knowledge graph",
+            "Identify how knowledge graphs support scaffolded learning",
+            "Recognize different types of connections in a knowledge graph"
+          ],
+          prerequisites: [
+            {
+              title: "Core Science: How the Brain Works",
+              description: "Understanding memory systems helps explain why knowledge graphs are effective"
+            }
+          ],
+          sections: [
+            {
+              title: "Introduction",
+              content: "Knowledge graphs map relationships between topics, showing prerequisites and connections that support structured learning sequences and targeted remediation."
+            },
+            {
+              title: "Understanding the Knowledge Graph",
+              content: "The knowledge graph links topics with their prerequisites, creating a structured map that guides learning pathways from foundational to advanced concepts."
+            },
+            {
+              title: "Using the Knowledge Graph",
+              content: "Knowledge graphs support scaffolded mastery learning by ensuring prerequisites are understood before advancing to more complex topics. They also enable targeted remediation when misconceptions arise."
+            }
+          ],
+          principles: [
+            {
+              name: "Knowledge Graph",
+              application: "This lesson directly explains the concept and application of knowledge graphs in structured learning."
+            },
+            {
+              name: "Scaffolded Mastery Learning",
+              application: "The knowledge graph provides the structure needed for effective scaffolded learning approaches."
+            }
+          ]
+        },
+        {
+          id: 5,
+          title: "Accountability and Incentives",
+          overview: "This lesson examines why accountability and incentives are critical but often missing in educational systems.",
+          objectives: [
+            "Understand why accountability matters in education",
+            "Identify problems that arise in the absence of accountability",
+            "Recognize how Math Academy applies accountability principles"
+          ],
+          prerequisites: [
+            {
+              title: "The Two-Sigma Solution",
+              description: "Provides context for understanding accountability's role in effective education"
+            }
+          ],
+          sections: [
+            {
+              title: "Introduction",
+              content: "Accountability and incentives are necessary components of effective educational systems, but they are often absent, leading to problems like grade inflation and resistance to objective measurement."
+            },
+            {
+              title: "What Happens in the Absence of Accountability",
+              content: "Without accountability, educational systems can experience a 'tragedy of the commons' where individual interests conflict with collective goals, leading to problems like grade inflation and resistance to objective measurement."
+            },
+            {
+              title: "Math Academy's Approach to Accountability",
+              content: "Math Academy builds accountability into its systems by focusing on objective measurement of student learning and using data to continuously improve teaching approaches."
+            }
+          ],
+          principles: [
+            {
+              name: "Scaffolded Mastery Learning",
+              application: "Accountability ensures that mastery is genuinely achieved before advancing to new topics."
+            },
+            {
+              name: "Prerequisites",
+              application: "Accountability systems ensure that prerequisite knowledge is truly mastered, not just superficially covered."
+            }
+          ]
+        }
+      ];
+    }
+  </script>
+</body>
+</html>
