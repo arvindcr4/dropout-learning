@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Academy - Knowledge Point</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+    .badge-xp {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    .xp-icon {
+      margin-right: 5px;
+      color: #ff9800;
+    }
+    .lesson-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .lesson-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .lesson-progress {
+      background-color: #e9ecef;
+      height: 8px;
+      border-radius: 4px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    .progress-value {
+      height: 100%;
+      background-color: #3498db;
+      border-radius: 4px;
+    }
+    .knowledge-point {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      background-color: white;
+    }
+    .knowledge-point-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #dee2e6;
+      background-color: #f8f9fa;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .knowledge-point-body {
+      padding: 20px;
+    }
+    .worked-example {
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      background-color: #f8f9fa;
+      margin-bottom: 20px;
+    }
+    .worked-example h5 {
+      color: #3498db;
+      margin-bottom: 15px;
+    }
+    .worked-example .step {
+      margin-bottom: 10px;
+      padding-left: 20px;
+      position: relative;
+    }
+    .worked-example .step-label {
+      font-weight: bold;
+      margin-right: 10px;
+      position: absolute;
+      left: 0;
+    }
+    .practice-problem {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .practice-problem-header {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .practice-problem-body {
+      padding: 15px;
+    }
+    .answer-option {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      background-color: white;
+      text-align: left;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .answer-option:hover {
+      background-color: #e9ecef;
+    }
+    .answer-option.selected {
+      background-color: #cce5ff;
+      border-color: #b8daff;
+    }
+    .answer-option.correct {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+    }
+    .answer-option.incorrect {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+    }
+    .answer-feedback {
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    .answer-feedback.correct {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .answer-feedback.incorrect {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .visual-aid {
+      max-width: 100%;
+      margin: 20px auto;
+      display: block;
+    }
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    .mastery-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .mastery-step {
+      width: 40px;
+      height: 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+    }
+    .mastery-step.complete {
+      background-color: #28a745;
+    }
+    .mastery-step.current {
+      background-color: #3498db;
+    }
+    .hidden {
+      display: none;
+    }
+    .subgoal-label {
+      display: inline-block;
+      font-weight: bold;
+      color: #3498db;
+      margin-bottom: 5px;
+    }
+    .formula {
+      font-family: "Computer Modern", serif;
+      background-color: #f8f9fa;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin: 5px 0;
+      display: inline-block;
+    }
+    .note {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    .btn-primary {
+      background-color: #3498db;
+      border-color: #3498db;
+    }
+    .btn-primary:hover {
+      background-color: #2980b9;
+      border-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Math Academy</a>
+      <div class="badge-xp">
+        <i class="fas fa-star xp-icon"></i>
+        <span id="xp-earned">0</span> XP Today
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="lesson-header">
+      <div>
+        <p class="text-muted mb-0">Lesson 2 of 5</p>
+        <h2>Solving Linear Equations</h2>
+      </div>
+      <div class="badge-xp">
+        <i class="fas fa-star xp-icon"></i>
+        30 XP per knowledge point
+      </div>
+    </div>
+    
+    <div class="lesson-progress">
+      <div class="progress-value" style="width: 40%"></div>
+    </div>
+    
+    <div class="lesson-card">
+      <h4>Knowledge Point 2: Solving Equations with Variables on Both Sides</h4>
+      <p>In this knowledge point, you'll learn how to solve linear equations where the variable appears on both sides of the equation.</p>
+      
+      <div class="knowledge-point">
+        <div class="knowledge-point-header">
+          <h5 class="mb-0">Worked Example</h5>
+          <span class="badge bg-info">Follow Along</span>
+        </div>
+        <div class="knowledge-point-body">
+          <p>Let's solve the equation: <span class="formula">3x + 2 = 5x - 8</span></p>
+          
+          <div class="worked-example">
+            <h5>Step-by-Step Solution</h5>
+            
+            <div class="step">
+              <span class="step-label">1.</span>
+              <span class="subgoal-label">Group variable terms on one side</span>
+              <p>Move all terms with the variable to the left side by subtracting 5x from both sides:</p>
+              <p class="formula">3x + 2 - 5x = 5x - 8 - 5x</p>
+              <p class="formula">3x - 5x + 2 = -8</p>
+              <p class="formula">-2x + 2 = -8</p>
+            </div>
+            
+            <div class="step">
+              <span class="step-label">2.</span>
+              <span class="subgoal-label">Group constant terms on the other side</span>
+              <p>Move all constant terms to the right side by subtracting 2 from both sides:</p>
+              <p class="formula">-2x + 2 - 2 = -8 - 2</p>
+              <p class="formula">-2x = -10</p>
+            </div>
+            
+            <div class="step">
+              <span class="step-label">3.</span>
+              <span class="subgoal-label">Isolate the variable</span>
+              <p>Divide both sides by -2 to solve for x:</p>
+              <p class="formula">-2x/-2 = -10/-2</p>
+              <p class="formula">x = 5</p>
+            </div>
+            
+            <div class="step">
+              <span class="step-label">4.</span>
+              <span class="subgoal-label">Verify the solution</span>
+              <p>Substitute x = 5 back into the original equation:</p>
+              <p class="formula">3(5) + 2 = 5(5) - 8</p>
+              <p class="formula">15 + 2 = 25 - 8</p>
+              <p class="formula">17 = 17</p>
+              <p>Since we got a true statement, x = 5 is the solution.</p>
+            </div>
+          </div>
+          
+          <div class="note">
+            <p><strong>Important:</strong> When solving equations with variables on both sides, follow these steps:</p>
+            <ol>
+              <li>Group variable terms on one side of the equation</li>
+              <li>Group constant terms on the other side</li>
+              <li>Isolate the variable by dividing both sides by the coefficient</li>
+              <li>Always verify your solution in the original equation</li>
+            </ol>
+          </div>
+          
+          <div class="text-center">
+            <button id="show-practice-btn" class="btn btn-primary mt-3">Continue to Practice Problems</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="practice-section" class="hidden">
+        <h5>Practice Problems</h5>
+        <p>Solve the following equations using the techniques from the worked example. You need to solve 3 out of 5 problems correctly to demonstrate mastery.</p>
+        
+        <div id="practice-problems-container">
+          <!-- Practice Problem 1 -->
+          <div class="practice-problem" id="problem-1">
+            <div class="practice-problem-header">
+              <h6 class="mb-0">Problem 1</h6>
+            </div>
+            <div class="practice-problem-body">
+              <p>Solve for x: <span class="formula">4x - 3 = 2x + 7</span></p>
+              
+              <div class="answer-options">
+                <button class="answer-option" data-answer="a">x = 5</button>
+                <button class="answer-option" data-answer="b">x = -5</button>
+                <button class="answer-option" data-answer="c">x = 2</button>
+                <button class="answer-option" data-answer="d">x = -2</button>
+              </div>
+              
+              <div class="answer-feedback" id="feedback-1"></div>
+            </div>
+          </div>
+          
+          <!-- Practice Problem 2 (Initially Hidden) -->
+          <div class="practice-problem hidden" id="problem-2">
+            <div class="practice-problem-header">
+              <h6 class="mb-0">Problem 2</h6>
+            </div>
+            <div class="practice-problem-body">
+              <p>Solve for y: <span class="formula">3y + 12 = 7y - 4</span></p>
+              
+              <div class="answer-options">
+                <button class="answer-option" data-answer="a">y = 4</button>
+                <button class="answer-option" data-answer="b">y = -4</button>
+                <button class="answer-option" data-answer="c">y = 8</button>
+                <button class="answer-option" data-answer="d">y = -8</button>
+              </div>
+              
+              <div class="answer-feedback" id="feedback-2"></div>
+            </div>
+          </div>
+          
+          <!-- Practice Problem 3 (Initially Hidden) -->
+          <div class="practice-problem hidden" id="problem-3">
+            <div class="practice-problem-header">
+              <h6 class="mb-0">Problem 3</h6>
+            </div>
+            <div class="practice-problem-body">
+              <p>Solve for z: <span class="formula">5z - 10 = 3z + 2</span></p>
+              
+              <div class="answer-options">
+                <button class="answer-option" data-answer="a">z = 6</button>
+                <button class="answer-option" data-answer="b">z = -6</button>
+                <button class="answer-option" data-answer="c">z = 3</button>
+                <button class="answer-option" data-answer="d">z = 12</button>
+              </div>
+              
+              <div class="answer-feedback" id="feedback-3"></div>
+            </div>
+          </div>
+          
+          <!-- Practice Problem 4 (Initially Hidden) -->
+          <div class="practice-problem hidden" id="problem-4">
+            <div class="practice-problem-header">
+              <h6 class="mb-0">Problem 4</h6>
+            </div>
+            <div class="practice-problem-body">
+              <p>Solve for x: <span class="formula">2(x + 3) = 3(x - 1)</span></p>
+              
+              <div class="answer-options">
+                <button class="answer-option" data-answer="a">x = 9</button>
+                <button class="answer-option" data-answer="b">x = -9</button>
+                <button class="answer-option" data-answer="c">x = 7</button>
+                <button class="answer-option" data-answer="d">x = -7</button>
+              </div>
+              
+              <div class="answer-feedback" id="feedback-4"></div>
+            </div>
+          </div>
+          
+          <!-- Practice Problem 5 (Initially Hidden) -->
+          <div class="practice-problem hidden" id="problem-5">
+            <div class="practice-problem-header">
+              <h6 class="mb-0">Problem 5</h6>
+            </div>
+            <div class="practice-problem-body">
+              <p>Solve for x: <span class="formula">4(x - 2) + 3 = 2(x + 1) + 5</span></p>
+              
+              <div class="answer-options">
+                <button class="answer-option" data-answer="a">x = 0</button>
+                <button class="answer-option" data-answer="b">x = 1</button>
+                <button class="answer-option" data-answer="c">x = 2</button>
+                <button class="answer-option" data-answer="d">x = 3</button>
+              </div>
+              
+              <div class="answer-feedback" id="feedback-5"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mastery-indicator">
+          <div class="mastery-step" id="mastery-1"></div>
+          <div class="mastery-step" id="mastery-2"></div>
+          <div class="mastery-step" id="mastery-3"></div>
+          <div class="mastery-step" id="mastery-4"></div>
+          <div class="mastery-step" id="mastery-5"></div>
+        </div>
+        
+        <div id="mastery-message" class="alert alert-success mt-4 hidden">
+          <strong>Congratulations!</strong> You've demonstrated mastery of this knowledge point. You've earned 30 XP!
+          <div class="text-center mt-3">
+            <a href="/" class="btn btn-success">Continue to Next Knowledge Point</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="navigation-buttons">
+      <a href="/" class="btn btn-outline-secondary">Previous Knowledge Point</a>
+      <a href="/" class="btn btn-outline-primary" id="next-btn" disabled>Next Knowledge Point</a>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const showPracticeBtn = document.getElementById('show-practice-btn');
+    const practiceSection = document.getElementById('practice-section');
+    const xpEarnedEl = document.getElementById('xp-earned');
+    const nextBtn = document.getElementById('next-btn');
+    const masteryMessage = document.getElementById('mastery-message');
+    
+    // Practice problems & solutions
+    const problems = [
+      { id: 1, answer: 'a', explanation: '4x - 3 = 2x + 7<br>4x - 2x = 7 + 3<br>2x = 10<br>x = 5' },
+      { id: 2, answer: 'a', explanation: '3y + 12 = 7y - 4<br>3y - 7y = -4 - 12<br>-4y = -16<br>y = 4' },
+      { id: 3, answer: 'd', explanation: '5z - 10 = 3z + 2<br>5z - 3z = 2 + 10<br>2z = 12<br>z = 6' },
+      { id: 4, answer: 'a', explanation: '2(x + 3) = 3(x - 1)<br>2x + 6 = 3x - 3<br>2x - 3x = -3 - 6<br>-x = -9<br>x = 9' },
+      { id: 5, answer: 'a', explanation: '4(x - 2) + 3 = 2(x + 1) + 5<br>4x - 8 + 3 = 2x + 2 + 5<br>4x - 5 = 2x + 7<br>4x - 2x = 7 + 5<br>2x = 12<br>x = 6' }
+    ];
+    
+    // State
+    let currentProblem = 1;
+    let correctAnswers = 0;
+    let attemptedProblems = 0;
+    let xpEarned = 0;
+    const requiredCorrect = 3;
+    
+    // Event Listeners
+    showPracticeBtn.addEventListener('click', () => {
+      practiceSection.classList.remove('hidden');
+      showPracticeBtn.classList.add('hidden');
+    });
+    
+    // Initialize answer option listeners
+    function initAnswerOptions() {
+      problems.forEach(problem => {
+        const problemEl = document.getElementById(`problem-${problem.id}`);
+        if (!problemEl) return;
+        
+        const options = problemEl.querySelectorAll('.answer-option');
+        options.forEach(option => {
+          option.addEventListener('click', () => checkAnswer(problem.id, option.dataset.answer));
+        });
+      });
+    }
+    
+    function checkAnswer(problemId, selectedAnswer) {
+      const problem = problems.find(p => p.id === parseInt(problemId));
+      const problemEl = document.getElementById(`problem-${problemId}`);
+      const feedbackEl = document.getElementById(`feedback-${problemId}`);
+      const options = problemEl.querySelectorAll('.answer-option');
+      const masteryStep = document.getElementById(`mastery-${problemId}`);
+      
+      // Disable all options for this problem
+      options.forEach(option => {
+        option.disabled = true;
+        if (option.dataset.answer === problem.answer) {
+          option.classList.add('correct');
+        } else if (option.dataset.answer === selectedAnswer) {
+          option.classList.add('incorrect');
+        }
+      });
+      
+      // Update feedback
+      feedbackEl.classList.remove('hidden');
+      if (selectedAnswer === problem.answer) {
+        feedbackEl.classList.add('correct');
+        feedbackEl.innerHTML = `
+          <p><strong>Correct!</strong></p>
+          <p>Solution: ${problem.explanation}</p>
+        `;
+        correctAnswers++;
+        masteryStep.classList.add('complete');
+      } else {
+        feedbackEl.classList.add('incorrect');
+        feedbackEl.innerHTML = `
+          <p><strong>Not quite right.</strong> Let's see where you went wrong.</p>
+          <p>The correct answer is: ${problem.answer.toUpperCase()}</p>
+          <p>Solution: ${problem.explanation}</p>
+        `;
+        masteryStep.classList.add('current');
+      }
+      
+      // Show feedback
+      feedbackEl.style.display = 'block';
+      
+      // Update attempted problems
+      attemptedProblems++;
+      
+      // Check if we should show the next problem
+      if (currentProblem < 5 && attemptedProblems === currentProblem) {
+        currentProblem++;
+        const nextProblemEl = document.getElementById(`problem-${currentProblem}`);
+        if (nextProblemEl) {
+          nextProblemEl.classList.remove('hidden');
+        }
+      }
+      
+      // Check if mastery achieved
+      if (correctAnswers >= requiredCorrect) {
+        masteryAchieved();
+      }
+      
+      // Check if all problems attempted
+      if (attemptedProblems === 5) {
+        if (correctAnswers < requiredCorrect) {
+          // Show a message offering to retry
+          const retryMessageEl = document.createElement('div');
+          retryMessageEl.className = 'alert alert-warning mt-4';
+          retryMessageEl.innerHTML = `
+            <p><strong>Good effort!</strong> You've solved ${correctAnswers} out of 5 problems correctly.</p>
+            <p>You need to solve at least ${requiredCorrect} problems correctly to demonstrate mastery.</p>
+            <div class="text-center mt-3">
+              <button id="retry-btn" class="btn btn-warning">Retry Practice Problems</button>
+            </div>
+          `;
+          document.getElementById('practice-problems-container').appendChild(retryMessageEl);
+          
+          document.getElementById('retry-btn').addEventListener('click', resetPractice);
+        }
+      }
+    }
+    
+    function masteryAchieved() {
+      // Award XP
+      xpEarned += 30;
+      xpEarnedEl.textContent = xpEarned;
+      
+      // Show mastery message
+      masteryMessage.classList.remove('hidden');
+      
+      // Enable next button
+      nextBtn.disabled = false;
+    }
+    
+    function resetPractice() {
+      // Reset state
+      currentProblem = 1;
+      correctAnswers = 0;
+      attemptedProblems = 0;
+      
+      // Reset UI
+      const problemEls = document.querySelectorAll('.practice-problem');
+      problemEls.forEach((el, index) => {
+        if (index === 0) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+        
+        // Reset answer options
+        const options = el.querySelectorAll('.answer-option');
+        options.forEach(option => {
+          option.disabled = false;
+          option.classList.remove('correct', 'incorrect', 'selected');
+        });
+        
+        // Hide feedback
+        const feedbackEl = el.querySelector('.answer-feedback');
+        feedbackEl.style.display = 'none';
+        feedbackEl.classList.remove('correct', 'incorrect');
+      });
+      
+      // Reset mastery indicators
+      const masterySteps = document.querySelectorAll('.mastery-step');
+      masterySteps.forEach(step => {
+        step.classList.remove('complete', 'current');
+      });
+      
+      // Remove retry message if it exists
+      const retryMessage = document.querySelector('.alert-warning');
+      if (retryMessage) {
+        retryMessage.remove();
+      }
+    }
+    
+    // Initialize the page
+    initAnswerOptions();
+  </script>
+</body>
+</html>

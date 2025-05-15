@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Academy - Adaptive Diagnostic</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .navbar {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: white;
+    }
+    .progress-indicator {
+      height: 8px;
+      width: 100%;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #3498db;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .diagnostic-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    .question-number {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    .question-content {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    .answer-option {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .answer-option:hover {
+      background-color: #e9ecef;
+    }
+    .answer-option.selected {
+      background-color: #cce5ff;
+      border-color: #b8daff;
+    }
+    .math-formula {
+      font-family: "Computer Modern", serif;
+    }
+    .explanation {
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      margin-top: 20px;
+      display: none;
+    }
+    .diagnostic-intro {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .step::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: #e9ecef;
+      z-index: 1;
+    }
+    .step:first-child::before {
+      left: 50%;
+      width: 50%;
+    }
+    .step:last-child::before {
+      width: 50%;
+    }
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #e9ecef;
+      border: 2px solid #dee2e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      position: relative;
+      z-index: 2;
+    }
+    .step.active .step-circle {
+      background-color: #3498db;
+      border-color: #2980b9;
+      color: white;
+    }
+    .step.completed .step-circle {
+      background-color: #28a745;
+      border-color: #218838;
+      color: white;
+    }
+    .step-title {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+    .step.active .step-title {
+      color: #3498db;
+      font-weight: bold;
+    }
+    .btn-primary {
+      background-color: #3498db;
+      border-color: #3498db;
+    }
+    .btn-primary:hover {
+      background-color: #2980b9;
+      border-color: #2980b9;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand">Math Academy</a>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div id="diagnostic-intro" class="diagnostic-intro">
+      <h1>Welcome to Your Adaptive Diagnostic</h1>
+      <p class="lead">
+        This assessment will help us identify your current knowledge level in mathematics and personalize your learning path.
+      </p>
+      
+      <div class="step-indicator">
+        <div class="step active">
+          <div class="step-circle">1</div>
+          <div class="step-title">Diagnostic</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-title">Knowledge Graph</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-title">Custom Course</div>
+        </div>
+      </div>
+      
+      <div class="diagnostic-card">
+        <h4>What to Expect</h4>
+        <ul class="text-start">
+          <li>The diagnostic takes approximately 30-45 minutes to complete</li>
+          <li>Questions will adapt based on your responses</li>
+          <li>We'll identify your knowledge frontier and any foundational gaps</li>
+          <li>You'll receive a personalized learning path</li>
+          <li>You can take breaks - your progress will be saved</li>
+        </ul>
+        <button id="start-diagnostic-btn" class="btn btn-primary btn-lg mt-3">Start Diagnostic</button>
+      </div>
+      
+      <p class="text-muted">
+        Based on your results, we'll create a custom course with daily XP goals to help you master math at your own pace.
+      </p>
+    </div>
+    
+    <div id="diagnostic-questions" class="hidden">
+      <h2>Adaptive Diagnostic</h2>
+      <p>Answer each question to the best of your ability. The questions will adapt based on your responses.</p>
+      
+      <div class="progress-indicator">
+        <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+      </div>
+      
+      <div id="question-container" class="diagnostic-card">
+        <div class="question-number">Question <span id="current-question">1</span> of <span id="total-questions">?</span></div>
+        <div id="question-content" class="question-content">
+          <!-- Question will be inserted here -->
+        </div>
+        
+        <div id="answer-options">
+          <!-- Answer options will be inserted here -->
+        </div>
+        
+        <div id="explanation" class="explanation">
+          <!-- Explanation will be shown here after answering -->
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+          <button id="prev-btn" class="btn btn-outline-secondary" disabled>Previous</button>
+          <button id="next-btn" class="btn btn-primary" disabled>Next Question</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="diagnostic-results" class="hidden">
+      <h2>Your Diagnostic Results</h2>
+      
+      <div class="step-indicator">
+        <div class="step completed">
+          <div class="step-circle"><i class="fas fa-check"></i></div>
+          <div class="step-title">Diagnostic</div>
+        </div>
+        <div class="step active">
+          <div class="step-circle">2</div>
+          <div class="step-title">Knowledge Graph</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-title">Custom Course</div>
+        </div>
+      </div>
+      
+      <div class="diagnostic-card">
+        <h4>Your Knowledge Frontier</h4>
+        <p>Based on your diagnostic results, we've identified your current knowledge level in mathematics:</p>
+        
+        <div id="knowledge-frontier" class="mt-3">
+          <!-- Knowledge frontier details will be inserted here -->
+        </div>
+      </div>
+      
+      <div class="diagnostic-card">
+        <h4>Identified Knowledge Gaps</h4>
+        <p>We've also identified some areas where you may need additional reinforcement:</p>
+        
+        <div id="knowledge-gaps" class="mt-3">
+          <!-- Knowledge gaps will be inserted here -->
+        </div>
+      </div>
+      
+      <div class="diagnostic-card">
+        <h4>Your Custom Course Plan</h4>
+        <p>Based on your results, we recommend the following personalized learning path:</p>
+        
+        <div id="course-recommendations" class="mt-3">
+          <!-- Course recommendations will be inserted here -->
+        </div>
+        
+        <div class="mt-4">
+          <h5>Estimated Completion Time</h5>
+          <p>Set your daily XP goal to track your progress:</p>
+          
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <select id="xp-goal-select" class="form-select">
+                <option value="50">Light (50 XP/day)</option>
+                <option value="100" selected>Moderate (100 XP/day)</option>
+                <option value="150">Intensive (150 XP/day)</option>
+                <option value="200">Accelerated (200 XP/day)</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <p class="mb-0 mt-2 mt-md-0">
+                Estimated completion: <span id="completion-time">Loading...</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center mt-4">
+          <a href="/" class="btn btn-primary btn-lg">Begin Your Custom Course</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const startDiagnosticBtn = document.getElementById('start-diagnostic-btn');
+    const diagnosticIntro = document.getElementById('diagnostic-intro');
+    const diagnosticQuestions = document.getElementById('diagnostic-questions');
+    const diagnosticResults = document.getElementById('diagnostic-results');
+    const progressBar = document.getElementById('progress-bar');
+    const currentQuestionEl = document.getElementById('current-question');
+    const totalQuestionsEl = document.getElementById('total-questions');
+    const questionContent = document.getElementById('question-content');
+    const answerOptions = document.getElementById('answer-options');
+    const explanation = document.getElementById('explanation');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const knowledgeFrontier = document.getElementById('knowledge-frontier');
+    const knowledgeGaps = document.getElementById('knowledge-gaps');
+    const courseRecommendations = document.getElementById('course-recommendations');
+    const xpGoalSelect = document.getElementById('xp-goal-select');
+    const completionTime = document.getElementById('completion-time');
+    
+    // State
+    let currentQuestion = 0;
+    let questions = [];
+    let userAnswers = [];
+    let totalQuestions = 10; // Initial estimate, will be updated as the diagnostic adapts
+    
+    // Event Listeners
+    startDiagnosticBtn.addEventListener('click', startDiagnostic);
+    prevBtn.addEventListener('click', showPreviousQuestion);
+    nextBtn.addEventListener('click', showNextQuestion);
+    xpGoalSelect.addEventListener('change', updateCompletionTime);
+    
+    // Functions
+    function startDiagnostic() {
+      diagnosticIntro.classList.add('hidden');
+      diagnosticQuestions.classList.remove('hidden');
+      
+      // Load initial questions
+      fetchInitialQuestions();
+    }
+    
+    function fetchInitialQuestions() {
+      // In a real implementation, this would fetch questions from the server
+      // For now, we'll use mock questions
+      
+      questions = [
+        {
+          id: 1,
+          content: 'Solve for x: 2x + 5 = 15',
+          options: [
+            { id: 'a', text: 'x = 5' },
+            { id: 'b', text: 'x = 10' },
+            { id: 'c', text: 'x = -5' },
+            { id: 'd', text: 'x = 7.5' }
+          ],
+          correctAnswer: 'a',
+          explanation: 'To solve for x, subtract 5 from both sides: 2x = 10. Then divide both sides by 2: x = 5.',
+          difficulty: 1,
+          topic: 'Linear Equations'
+        },
+        {
+          id: 2,
+          content: 'Find the area of a circle with radius 4 units.',
+          options: [
+            { id: 'a', text: '8π square units' },
+            { id: 'b', text: '16π square units' },
+            { id: 'c', text: '4π square units' },
+            { id: 'd', text: '12π square units' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'The area of a circle is given by the formula A = πr². With r = 4, we get A = π×4² = 16π square units.',
+          difficulty: 1,
+          topic: 'Geometry'
+        },
+        {
+          id: 3,
+          content: 'Simplify the expression: (3x² - 2x + 1) + (2x² + 3x - 5)',
+          options: [
+            { id: 'a', text: '5x² - 5x - 4' },
+            { id: 'b', text: '5x² + x - 4' },
+            { id: 'c', text: '6x² + x - 4' },
+            { id: 'd', text: '5x² + x - 6' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'Combine like terms: (3x² + 2x²) + (-2x + 3x) + (1 - 5) = 5x² + x - 4',
+          difficulty: 2,
+          topic: 'Polynomial Expressions'
+        },
+        {
+          id: 4,
+          content: 'Find the derivative of f(x) = x³ - 4x² + 2x - 1',
+          options: [
+            { id: 'a', text: 'f\'(x) = 3x² - 8x + 2' },
+            { id: 'b', text: 'f\'(x) = 3x² - 4x + 2' },
+            { id: 'c', text: 'f\'(x) = 3x² - 8x - 1' },
+            { id: 'd', text: 'f\'(x) = x² - 8x + 2' }
+          ],
+          correctAnswer: 'a',
+          explanation: 'Take the derivative term by term: f\'(x) = 3x² - 8x + 2',
+          difficulty: 3,
+          topic: 'Calculus'
+        },
+        {
+          id: 5,
+          content: 'Solve the system of equations:\nx + 2y = 7\n2x - y = 4',
+          options: [
+            { id: 'a', text: 'x = 3, y = 2' },
+            { id: 'b', text: 'x = 4, y = 1.5' },
+            { id: 'c', text: 'x = 5, y = 1' },
+            { id: 'd', text: 'x = 2, y = 2.5' }
+          ],
+          correctAnswer: 'a',
+          explanation: 'From the second equation: x = (4 + y)/2. Substitute into the first equation: (4 + y)/2 + 2y = 7. Solve for y: y = 2. Then x = (4 + 2)/2 = 3.',
+          difficulty: 2,
+          topic: 'Systems of Equations'
+        }
+      ];
+      
+      // Set total questions
+      totalQuestions = questions.length;
+      totalQuestionsEl.textContent = totalQuestions;
+      
+      // Initialize user answers
+      userAnswers = new Array(totalQuestions).fill(null);
+      
+      // Show the first question
+      showQuestion(0);
+    }
+    
+    function showQuestion(index) {
+      // Update current question number
+      currentQuestion = index;
+      currentQuestionEl.textContent = index + 1;
+      
+      // Update progress bar
+      const progress = ((index + 1) / totalQuestions) * 100;
+      progressBar.style.width = `${progress}%`;
+      
+      // Display question
+      const question = questions[index];
+      questionContent.innerHTML = question.content.replace(/\n/g, '<br>');
+      
+      // Create answer options
+      answerOptions.innerHTML = '';
+      question.options.forEach(option => {
+        const optionEl = document.createElement('div');
+        optionEl.className = 'answer-option';
+        if (userAnswers[index] === option.id) {
+          optionEl.classList.add('selected');
+        }
+        optionEl.textContent = `${option.id.toUpperCase()}. ${option.text}`;
+        optionEl.addEventListener('click', () => selectAnswer(option.id));
+        answerOptions.appendChild(optionEl);
+      });
+      
+      // Show explanation if already answered
+      if (userAnswers[index] !== null) {
+        showExplanation(question);
+      } else {
+        explanation.style.display = 'none';
+      }
+      
+      // Enable/disable navigation buttons
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = userAnswers[index] === null;
+      
+      // If this is the last question, change next button text
+      if (index === totalQuestions - 1) {
+        nextBtn.textContent = 'See Results';
+      } else {
+        nextBtn.textContent = 'Next Question';
+      }
+    }
+    
+    function selectAnswer(optionId) {
+      userAnswers[currentQuestion] = optionId;
+      
+      // Update option styling
+      const options = answerOptions.querySelectorAll('.answer-option');
+      options.forEach(option => {
+        option.classList.remove('selected');
+        if (option.textContent.startsWith(optionId.toUpperCase())) {
+          option.classList.add('selected');
+        }
+      });
+      
+      // Show explanation
+      showExplanation(questions[currentQuestion]);
+      
+      // Enable next button
+      nextBtn.disabled = false;
+    }
+    
+    function showExplanation(question) {
+      explanation.innerHTML = `
+        <h5>Explanation</h5>
+        <p>${question.explanation}</p>
+        ${userAnswers[currentQuestion] === question.correctAnswer 
+          ? '<div class="alert alert-success mt-2">Correct answer!</div>' 
+          : '<div class="alert alert-danger mt-2">Not quite. The correct answer is ' + question.correctAnswer.toUpperCase() + '.</div>'}
+      `;
+      explanation.style.display = 'block';
+    }
+    
+    function showPreviousQuestion() {
+      if (currentQuestion > 0) {
+        showQuestion(currentQuestion - 1);
+      }
+    }
+    
+    function showNextQuestion() {
+      if (currentQuestion < totalQuestions - 1) {
+        showQuestion(currentQuestion + 1);
+      } else {
+        // Show results
+        showResults();
+      }
+    }
+    
+    function showResults() {
+      diagnosticQuestions.classList.add('hidden');
+      diagnosticResults.classList.remove('hidden');
+      
+      // Calculate diagnostic results
+      generateResults();
+    }
+    
+    function generateResults() {
+      // In a real implementation, this would analyze the answers and generate personalized results
+      // For now, we'll use mock results
+      
+      // Calculate score
+      let correctCount = 0;
+      userAnswers.forEach((answer, index) => {
+        if (answer === questions[index].correctAnswer) {
+          correctCount++;
+        }
+      });
+      
+      const score = Math.round((correctCount / totalQuestions) * 100);
+      
+      // Generate knowledge frontier
+      let frontierLevel = 'Intermediate';
+      let frontierDescription = 'You have a solid foundation in basic algebra and geometry.';
+      
+      if (score < 40) {
+        frontierLevel = 'Beginner';
+        frontierDescription = 'You have some foundational knowledge but need to strengthen your understanding of basic algebraic concepts.';
+      } else if (score > 70) {
+        frontierLevel = 'Advanced';
+        frontierDescription = 'You demonstrate strong mathematical skills including more advanced topics in algebra and calculus.';
+      }
+      
+      knowledgeFrontier.innerHTML = `
+        <div class="alert alert-info">
+          <h5>Your Level: ${frontierLevel}</h5>
+          <p>${frontierDescription}</p>
+          <div class="progress-indicator mt-3">
+            <div class="progress-bar" style="width: ${score}%"></div>
+          </div>
+          <div class="text-end mt-1">${score}% Mastery</div>
+        </div>
+      `;
+      
+      // Generate knowledge gaps
+      const gaps = [];
+      if (userAnswers[2] !== questions[2].correctAnswer) {
+        gaps.push('Polynomial Expressions');
+      }
+      if (userAnswers[3] !== questions[3].correctAnswer) {
+        gaps.push('Calculus Fundamentals');
+      }
+      if (userAnswers[4] !== questions[4].correctAnswer) {
+        gaps.push('Systems of Equations');
+      }
+      
+      if (gaps.length === 0) {
+        knowledgeGaps.innerHTML = '<div class="alert alert-success">No significant knowledge gaps were identified. You have a solid foundation!</div>';
+      } else {
+        knowledgeGaps.innerHTML = `
+          <div class="alert alert-warning">
+            <h5>Areas to Strengthen:</h5>
+            <ul>
+              ${gaps.map(gap => `<li>${gap}</li>`).join('')}
+            </ul>
+            <p>Don't worry! Our custom course will automatically incorporate these topics into your learning path.</p>
+          </div>
+        `;
+      }
+      
+      // Generate course recommendations
+      let recommendedCourse = 'Intermediate Algebra';
+      if (score < 40) {
+        recommendedCourse = 'Algebra Fundamentals';
+      } else if (score > 70) {
+        recommendedCourse = 'Pre-Calculus';
+      }
+      
+      courseRecommendations.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Recommended Course: ${recommendedCourse}</h5>
+          </div>
+          <div class="card-body">
+            <p>This personalized course will include:</p>
+            <ul>
+              <li>Tailored content based on your knowledge level</li>
+              <li>Targeted practice for identified knowledge gaps</li>
+              <li>Adaptive learning that adjusts to your progress</li>
+              <li>Daily XP goals to keep you on track</li>
+            </ul>
+            <p class="mb-0">Your personal knowledge graph will continuously update as you progress through the course.</p>
+          </div>
+        </div>
+      `;
+      
+      // Update completion time
+      updateCompletionTime();
+    }
+    
+    function updateCompletionTime() {
+      const dailyXPGoal = parseInt(xpGoalSelect.value);
+      const totalEstimatedXP = 3000; // Mock value
+      const days = Math.ceil(totalEstimatedXP / dailyXPGoal);
+      
+      completionTime.textContent = `${days} days (about ${Math.round(days/7)} weeks)`;
+    }
+  </script>
+</body>
+</html>
