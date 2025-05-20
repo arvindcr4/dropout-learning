@@ -90,19 +90,31 @@ const LessonGenerator = {
     // topic that depends on it. This orientation ensures that a topic appears
     // after all of its prerequisites in the final ordering.
     const graph = {};
+    const inDegree = {};
+
+    // Initialize graph and indegree map
     topics.forEach(topic => {
       graph[topic.id] = [];
+      inDegree[topic.id] = 0;
     });
 
-    // Build adjacency lists based on prerequisite relationships
+    // Populate edges and compute in-degree for targets
     relationships.forEach(rel => {
-      if (rel.type === 'prerequisite' && graph[rel.source] !== undefined && graph[rel.target] !== undefined) {
+      if (
+        rel.type === 'prerequisite' &&
+        graph[rel.source] !== undefined &&
+        graph[rel.target] !== undefined
+      ) {
         graph[rel.source].push(rel.target);
+        inDegree[rel.target]++;
+
       }
     });
-    
-    // Topological sort (Kahn's algorithm)
+
+    // Kahn's algorithm for topological sorting
+    const queue = Object.keys(inDegree).filter(id => inDegree[id] === 0);
     const result = [];
+
     const inDegree = {};
     const queue = [];
     
@@ -126,21 +138,23 @@ const LessonGenerator = {
     });
     
     // Process the queue
+
     while (queue.length > 0) {
       const node = queue.shift();
       result.push(node);
-      
-      // Reduce in-degree of adjacent nodes
-      graph[node].forEach(adjacentNode => {
-        inDegree[adjacentNode]--;
-        if (inDegree[adjacentNode] === 0) {
-          queue.push(adjacentNode);
+
+      graph[node].forEach(next => {
+        inDegree[next]--;
+        if (inDegree[next] === 0) {
+          queue.push(next);
         }
       });
     }
-    
-    // Map the sorted node IDs back to the original topics
-    return result.map(id => topics.find(topic => topic.id.toString() === id.toString())).filter(Boolean);
+
+    // Map sorted IDs back to topic objects
+    return result
+      .map(id => topics.find(topic => topic.id.toString() === id.toString()))
+      .filter(Boolean);
   },
   
   /**
@@ -520,3 +534,10 @@ const LessonGenerator = {
     }
   }
 };
+
+// Export for Node.js environments while preserving browser usage
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = LessonGenerator;
+} else {
+  window.LessonGenerator = LessonGenerator;
+}
