@@ -86,59 +86,49 @@ const LessonGenerator = {
    * @returns {Array} - Sorted array of topics
    */
   sortTopicsBasedOnPrerequisites: function(topics, relationships) {
-    // Create a directed graph of prerequisites
+    // Create a directed graph where edges point from a prerequisite to the
+    // topic that depends on it. This orientation ensures that a topic appears
+    // after all of its prerequisites in the final ordering.
     const graph = {};
+    const inDegree = {};
+
+    // Initialize graph and indegree map
     topics.forEach(topic => {
       graph[topic.id] = [];
+      inDegree[topic.id] = 0;
     });
-    
-    // Add prerequisite relationships to the graph
+
+    // Populate edges and compute in-degree for targets
     relationships.forEach(rel => {
-      if (rel.type === 'prerequisite' && graph[rel.target]) {
-        graph[rel.target].push(rel.source);
+      if (
+        rel.type === 'prerequisite' &&
+        graph[rel.source] !== undefined &&
+        graph[rel.target] !== undefined
+      ) {
+        graph[rel.source].push(rel.target);
+        inDegree[rel.target]++;
       }
     });
-    
-    // Topological sort (Kahn's algorithm)
+
+    // Kahn's algorithm for topological sorting
+    const queue = Object.keys(inDegree).filter(id => inDegree[id] === 0);
     const result = [];
-    const inDegree = {};
-    const queue = [];
-    
-    // Initialize in-degree for all nodes
-    Object.keys(graph).forEach(node => {
-      inDegree[node] = 0;
-    });
-    
-    // Calculate in-degree for each node
-    Object.keys(graph).forEach(node => {
-      graph[node].forEach(prerequisite => {
-        inDegree[prerequisite] = (inDegree[prerequisite] || 0) + 1;
-      });
-    });
-    
-    // Add nodes with in-degree 0 to the queue
-    Object.keys(inDegree).forEach(node => {
-      if (inDegree[node] === 0) {
-        queue.push(node);
-      }
-    });
-    
-    // Process the queue
     while (queue.length > 0) {
       const node = queue.shift();
       result.push(node);
-      
-      // Reduce in-degree of adjacent nodes
-      graph[node].forEach(adjacentNode => {
-        inDegree[adjacentNode]--;
-        if (inDegree[adjacentNode] === 0) {
-          queue.push(adjacentNode);
+
+      graph[node].forEach(next => {
+        inDegree[next]--;
+        if (inDegree[next] === 0) {
+          queue.push(next);
         }
       });
     }
-    
-    // Map the sorted node IDs back to the original topics
-    return result.map(id => topics.find(topic => topic.id.toString() === id.toString())).filter(Boolean);
+
+    // Map sorted IDs back to topic objects
+    return result
+      .map(id => topics.find(topic => topic.id.toString() === id.toString()))
+      .filter(Boolean);
   },
   
   /**
@@ -518,3 +508,10 @@ const LessonGenerator = {
     }
   }
 };
+
+// Export for Node.js environments while preserving browser usage
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = LessonGenerator;
+} else {
+  window.LessonGenerator = LessonGenerator;
+}
