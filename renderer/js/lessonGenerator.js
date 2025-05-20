@@ -86,16 +86,18 @@ const LessonGenerator = {
    * @returns {Array} - Sorted array of topics
    */
   sortTopicsBasedOnPrerequisites: function(topics, relationships) {
-    // Create a directed graph of prerequisites
+    // Create a directed graph where edges point from a prerequisite to the
+    // topic that depends on it. This orientation ensures that a topic appears
+    // after all of its prerequisites in the final ordering.
     const graph = {};
     topics.forEach(topic => {
       graph[topic.id] = [];
     });
-    
-    // Add prerequisite relationships to the graph
+
+    // Build adjacency lists based on prerequisite relationships
     relationships.forEach(rel => {
-      if (rel.type === 'prerequisite' && graph[rel.target]) {
-        graph[rel.target].push(rel.source);
+      if (rel.type === 'prerequisite' && graph[rel.source] !== undefined && graph[rel.target] !== undefined) {
+        graph[rel.source].push(rel.target);
       }
     });
     
@@ -109,10 +111,10 @@ const LessonGenerator = {
       inDegree[node] = 0;
     });
     
-    // Calculate in-degree for each node
+    // Calculate in-degree for each node based on incoming edges
     Object.keys(graph).forEach(node => {
-      graph[node].forEach(prerequisite => {
-        inDegree[prerequisite] = (inDegree[prerequisite] || 0) + 1;
+      graph[node].forEach(dependent => {
+        inDegree[dependent] = (inDegree[dependent] || 0) + 1;
       });
     });
     
