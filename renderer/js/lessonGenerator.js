@@ -107,12 +107,38 @@ const LessonGenerator = {
       ) {
         graph[rel.source].push(rel.target);
         inDegree[rel.target]++;
+
       }
     });
 
     // Kahn's algorithm for topological sorting
     const queue = Object.keys(inDegree).filter(id => inDegree[id] === 0);
     const result = [];
+
+    const inDegree = {};
+    const queue = [];
+    
+    // Initialize in-degree for all nodes
+    Object.keys(graph).forEach(node => {
+      inDegree[node] = 0;
+    });
+    
+    // Calculate in-degree for each node based on incoming edges
+    Object.keys(graph).forEach(node => {
+      graph[node].forEach(dependent => {
+        inDegree[dependent] = (inDegree[dependent] || 0) + 1;
+      });
+    });
+    
+    // Add nodes with in-degree 0 to the queue
+    Object.keys(inDegree).forEach(node => {
+      if (inDegree[node] === 0) {
+        queue.push(node);
+      }
+    });
+    
+    // Process the queue
+
     while (queue.length > 0) {
       const node = queue.shift();
       result.push(node);
